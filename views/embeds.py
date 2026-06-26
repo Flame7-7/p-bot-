@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import discord
-from discord.ui import Button, View
+from discord.ui import Button, View, button
 
 from services.roleplay_service import ActionResult
 
@@ -241,33 +241,33 @@ class PaginatedView(DiscordUIV2View):
                 elif child.custom_id == "page_indicator":
                     child.label = f"Page {self.current_page + 1}/{total}"
 
-    @Button(label="⏮️", style=discord.ButtonStyle.secondary, custom_id="first_page")
+    @button(label="⏮️", style=discord.ButtonStyle.secondary, custom_id="first_page")
     async def first_page(self, interaction: discord.Interaction, button: Button) -> None:
         """Go to first page."""
         self.current_page = 0
         self._update_buttons()
         await interaction.response.edit_message(embed=self.pages[self.current_page], view=self)
 
-    @Button(label="◀️", style=discord.ButtonStyle.primary, custom_id="prev_page")
+    @button(label="◀️", style=discord.ButtonStyle.primary, custom_id="prev_page")
     async def prev_page(self, interaction: discord.Interaction, button: Button) -> None:
         """Go to previous page."""
         self.current_page = max(0, self.current_page - 1)
         self._update_buttons()
         await interaction.response.edit_message(embed=self.pages[self.current_page], view=self)
 
-    @Button(label="Page 1/1", style=discord.ButtonStyle.secondary, custom_id="page_indicator", disabled=True)
+    @button(label="Page 1/1", style=discord.ButtonStyle.secondary, custom_id="page_indicator", disabled=True)
     async def page_indicator(self, interaction: discord.Interaction, button: Button) -> None:
         """Page indicator (non-interactive)."""
         pass
 
-    @Button(label="▶️", style=discord.ButtonStyle.primary, custom_id="next_page")
+    @button(label="▶️", style=discord.ButtonStyle.primary, custom_id="next_page")
     async def next_page(self, interaction: discord.Interaction, button: Button) -> None:
         """Go to next page."""
         self.current_page = min(len(self.pages) - 1, self.current_page + 1)
         self._update_buttons()
         await interaction.response.edit_message(embed=self.pages[self.current_page], view=self)
 
-    @Button(label="⏭️", style=discord.ButtonStyle.secondary, custom_id="last_page")
+    @button(label="⏭️", style=discord.ButtonStyle.secondary, custom_id="last_page")
     async def last_page(self, interaction: discord.Interaction, button: Button) -> None:
         """Go to last page."""
         self.current_page = len(self.pages) - 1
