@@ -26,7 +26,7 @@ class ProposalView(DiscordUIV2View):
         """Accept the relationship proposal."""
         rel = await self.repo.accept_proposal(self.proposal_id)
         if not rel:
-            await interaction.response.send_message("This proposal has expired.", ephemeral=True)
+            await interaction.response.send_message("This proposal has expired.")
             return
         self.stop()
         embed = discord.Embed(
@@ -61,16 +61,16 @@ class RelationshipsCog(commands.Cog, name="Relationships"):
     @app_commands.describe(user="The user you want to propose to")
     async def propose(self, interaction: discord.Interaction, user: discord.Member) -> None:
         if user.id == interaction.user.id:
-            await interaction.response.send_message("You can't propose to yourself!", ephemeral=True)
+            await interaction.response.send_message("You can't propose to yourself!")
             return
         if user.bot:
-            await interaction.response.send_message("You can't propose to a bot!", ephemeral=True)
+            await interaction.response.send_message("You can't propose to a bot!")
             return
         if await self.repo.get_relationship(interaction.user.id):
-            await interaction.response.send_message("You're already in a relationship!", ephemeral=True)
+            await interaction.response.send_message("You're already in a relationship!")
             return
         if await self.repo.get_relationship(user.id):
-            await interaction.response.send_message(f"{user.display_name} is already in a relationship!", ephemeral=True)
+            await interaction.response.send_message(f"{user.display_name} is already in a relationship!")
             return
 
         proposal = await self.repo.create_proposal(interaction.user.id, user.id)
@@ -88,12 +88,12 @@ class RelationshipsCog(commands.Cog, name="Relationships"):
     async def partner(self, interaction: discord.Interaction) -> None:
         rel = await self.repo.get_relationship(interaction.user.id)
         if not rel:
-            await interaction.response.send_message("You're not in a relationship!", ephemeral=True)
+            await interaction.response.send_message("You're not in a relationship!")
             return
         partner_id = rel.user2_id if rel.user1_id == interaction.user.id else rel.user1_id
         partner = interaction.guild.get_member(partner_id) if interaction.guild else None
         if not partner:
-            await interaction.response.send_message("Your partner isn't in this server!", ephemeral=True)
+            await interaction.response.send_message("Your partner isn't in this server!")
             return
         embed = build_relationship_embed(interaction.user, partner, rel)  # type: ignore[arg-type]
         await interaction.response.send_message(embed=embed)
@@ -101,7 +101,7 @@ class RelationshipsCog(commands.Cog, name="Relationships"):
     @app_commands.command(name="breakup", description="End your relationship")
     async def breakup(self, interaction: discord.Interaction) -> None:
         if not await self.repo.get_relationship(interaction.user.id):
-            await interaction.response.send_message("You're not in a relationship!", ephemeral=True)
+            await interaction.response.send_message("You're not in a relationship!")
             return
         await self.repo.end_relationship(interaction.user.id)
         embed = discord.Embed(
@@ -117,7 +117,7 @@ class RelationshipsCog(commands.Cog, name="Relationships"):
     async def anniversary(self, interaction: discord.Interaction) -> None:
         rel = await self.repo.get_relationship(interaction.user.id)
         if not rel:
-            await interaction.response.send_message("You're not in a relationship!", ephemeral=True)
+            await interaction.response.send_message("You're not in a relationship!")
             return
         from datetime import datetime, timezone
         days = (datetime.now(timezone.utc) - rel.started_at.replace(tzinfo=timezone.utc)).days

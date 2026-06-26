@@ -53,7 +53,7 @@ class ProfileCog(commands.Cog, name="Profile"):
     @app_commands.describe(bio="Your bio (max 200 characters)")
     async def setbio(self, interaction: discord.Interaction, bio: str) -> None:
         if len(bio) > 200:
-            await interaction.response.send_message("Bio must be 200 characters or less.", ephemeral=True)
+            await interaction.response.send_message("Bio must be 200 characters or less.")
             return
         await self.user_repo.get_or_create(interaction.user.id, interaction.user.display_name)
         async with get_session() as session:
@@ -61,7 +61,7 @@ class ProfileCog(commands.Cog, name="Profile"):
             p = r.scalar_one_or_none()
             if p:
                 p.bio = bio
-        await interaction.response.send_message("✅ Bio updated!", ephemeral=True)
+        await interaction.response.send_message("✅ Bio updated!")
 
     @app_commands.command(name="stats", description="View your interaction statistics")
     @app_commands.describe(user="User to view (defaults to you)")

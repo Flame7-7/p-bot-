@@ -113,7 +113,7 @@ class VerificationCog(commands.Cog):
         if profile and profile.get('consent_given') and profile.get('gender'):
             await interaction.response.send_message(
                 "✅ You are already verified!", 
-                ephemeral=True
+                
             )
             return
 
@@ -147,7 +147,7 @@ class VerificationCog(commands.Cog):
         if not self.is_verified(interaction.user.id):
             embed.set_footer(text="Run /verify to complete setup.")
             
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.response.send_message(embed=embed)
 
 # Decorator to check verification
 def requires_verification():
@@ -162,7 +162,7 @@ def requires_verification():
                 description="You must verify your age and gender before using this command.\nUse `/verify` to start.",
                 color=discord.Color.red()
             )
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            await interaction.response.send_message(embed=embed)
             return False
         return True
     return app_commands.check(predicate)

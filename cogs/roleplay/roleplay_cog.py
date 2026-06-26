@@ -27,7 +27,7 @@ async def _run(
         guild_id=interaction.guild_id or 0,
     )
     if isinstance(result, str):
-        await interaction.followup.send(result, ephemeral=True)
+        await interaction.followup.send(result)
         return
 
     from services.action_registry import get_action

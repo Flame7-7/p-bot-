@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from services.action_registry import get_by_category
+from services.action_registry import get_by_category, get_all_categories
 from views.embeds import PaginatedView
 
 CATEGORY_INFO = {
@@ -27,9 +27,20 @@ class HelpCog(commands.Cog, name="Help"):
         overview = discord.Embed(
             title="🌸 Roleplay Bot",
             description=(
-                "A social roleplay bot with 32 commands, relationships, "
+                "A social roleplay bot with relationships, "
                 "achievements, leveling, and leaderboards!\n\n"
-                "Use the buttons below to browse."
+                "**Browse by Category:**\n"
+                "• 💕 **Affection** - Show love and care\n"
+                "• 😄 **Playful** - Have fun together\n"
+                "• 💭 **Emotional** - Deep connections\n"
+                "• 🤝 **Social** - Interact with others\n\n"
+                "**Other Features:**\n"
+                "• 👤 Profile & Stats\n"
+                "• 💑 Relationships\n"
+                "• 🏆 Achievements\n"
+                "• 📊 Leaderboards\n"
+                "• 🎁 Economy\n"
+                "• ⚙️ Settings"
             ),
             color=0x7289DA,
         )
@@ -38,24 +49,21 @@ class HelpCog(commands.Cog, name="Help"):
             value="`/hug @user` · `/profile` · `/propose @user` · `/top`",
             inline=False,
         )
-        overview.add_field(
-            name="📋 Features",
-            value=(
-                "• 32 Roleplay commands with GIFs\n"
-                "• Relationship system\n"
-                "• Achievements & leveling\n"
-                "• Daily rewards + streaks\n"
-                "• Leaderboards"
-            ),
-            inline=False,
-        )
-        overview.set_footer(text="Page 1/6")
+        overview.set_footer(text="Page 1/7")
         pages.append(overview)
 
-        # Pages 2-5: One per category
-        for idx, (cat_key, (cat_label, color)) in enumerate(CATEGORY_INFO.items(), start=2):
+        # Pages 2-5: One per category (dynamically generated)
+        categories = get_all_categories()
+        page_num = 2
+        for cat_key, (cat_label, color) in CATEGORY_INFO.items():
             actions = get_by_category(cat_key)
-            embed = discord.Embed(title=f"{cat_label} Commands", color=color)
+            if not actions:
+                continue
+            embed = discord.Embed(
+                title=f"{cat_label} Commands",
+                description=f"Browse all {cat_label.lower()} roleplay actions.",
+                color=color,
+            )
             for action in actions:
                 note = " *(target optional)*" if action.self_targetable else ""
                 embed.add_field(
@@ -67,22 +75,51 @@ class HelpCog(commands.Cog, name="Help"):
                     ),
                     inline=False,
                 )
-            embed.set_footer(text=f"Page {idx}/6")
+            embed.set_footer(text=f"Page {page_num}/7")
             pages.append(embed)
+            page_num += 1
 
-        # Page 6: Utility commands
-        other = discord.Embed(title="🛠️ Other Commands", color=0x7289DA)
-        other.add_field(name="👤 Profile", value="`/profile` `/setbio` `/stats`", inline=False)
-        other.add_field(name="💑 Relationships", value="`/propose` `/partner` `/breakup` `/anniversary`", inline=False)
-        other.add_field(name="🏆 Achievements", value="`/achievements`", inline=False)
-        other.add_field(name="📊 Leaderboard", value="`/top affection|level|interactions`", inline=False)
-        other.add_field(name="🎁 Economy", value="`/daily`", inline=False)
-        other.add_field(name="⚙️ Settings", value="`/settings`", inline=False)
-        other.set_footer(text="Page 6/6")
+        # Last Page: Utility commands
+        other = discord.Embed(
+            title="🛠️ Other Commands",
+            description="Utility and management commands.",
+            color=0x7289DA,
+        )
+        other.add_field(
+            name="👤 Profile",
+            value="`/profile` `/setbio` `/stats`",
+            inline=False,
+        )
+        other.add_field(
+            name="💑 Relationships",
+            value="`/propose` `/partner` `/breakup` `/anniversary`",
+            inline=False,
+        )
+        other.add_field(
+            name="🏆 Achievements",
+            value="`/achievements`",
+            inline=False,
+        )
+        other.add_field(
+            name="📊 Leaderboard",
+            value="`/top affection|level|interactions`",
+            inline=False,
+        )
+        other.add_field(
+            name="🎁 Economy",
+            value="`/daily`",
+            inline=False,
+        )
+        other.add_field(
+            name="⚙️ Settings",
+            value="`/settings`",
+            inline=False,
+        )
+        other.set_footer(text=f"Page {page_num}/7")
         pages.append(other)
 
         await interaction.response.send_message(
-            embed=pages[0], view=PaginatedView(pages), ephemeral=True
+            embed=pages[0], view=PaginatedView(pages)
         )
 
 

@@ -40,7 +40,7 @@ class SettingsView(discord.ui.View):
     @discord.ui.button(row=0)
     async def btn_interactions(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         if interaction.user.id != self.user_id:
-            await interaction.response.send_message("These aren't your settings!", ephemeral=True)
+            await interaction.response.send_message("These aren't your settings!")
             return
         self.allow = not self.allow
         async with get_session() as session:
@@ -56,7 +56,7 @@ class SettingsView(discord.ui.View):
     @discord.ui.button(row=0)
     async def btn_lb(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         if interaction.user.id != self.user_id:
-            await interaction.response.send_message("These aren't your settings!", ephemeral=True)
+            await interaction.response.send_message("These aren't your settings!")
             return
         self.leaderboard = not self.leaderboard
         async with get_session() as session:
@@ -72,7 +72,7 @@ class SettingsView(discord.ui.View):
     @discord.ui.button(label="🔒 Close", style=discord.ButtonStyle.secondary, row=1)
     async def btn_close(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         if interaction.user.id != self.user_id:
-            await interaction.response.send_message("These aren't your settings!", ephemeral=True)
+            await interaction.response.send_message("These aren't your settings!")
             return
         for c in self.children:
             c.disabled = True  # type: ignore[attr-defined]
@@ -98,7 +98,7 @@ class SettingsCog(commands.Cog, name="Settings"):
         allow = s.allow_interactions if s else True
         lb = s.show_in_leaderboard if s else True
         view = SettingsView(interaction.user.id, allow, lb)
-        await interaction.response.send_message(embed=view.build_embed(), view=view, ephemeral=True)
+        await interaction.response.send_message(embed=view.build_embed(), view=view)
 
 
 async def setup(bot: commands.Bot) -> None:

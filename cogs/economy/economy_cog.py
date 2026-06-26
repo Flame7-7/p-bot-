@@ -26,14 +26,14 @@ class EconomyCog(commands.Cog, name="Economy"):
 
     @app_commands.command(name="daily", description="Claim your daily XP and affection reward")
     async def daily(self, interaction: discord.Interaction) -> None:
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer(
         uid = interaction.user.id
 
         # Check claimed
         if cache_get(f"daily:{uid}"):
             ttl_val = cache_get(f"daily_ttl:{uid}") or 0
             await interaction.followup.send(
-                "⏳ You already claimed today's reward! Come back tomorrow.", ephemeral=True
+                "⏳ You already claimed today's reward! Come back tomorrow."
             )
             return
 
@@ -64,7 +64,7 @@ class EconomyCog(commands.Cog, name="Economy"):
             embed.add_field(name="🎉 Level Up!", value=f"You reached **Level {new_level}**!", inline=False)
         embed.set_footer(text=f"Max streak: {config.max_streak} days")
         embed.timestamp = discord.utils.utcnow()
-        await interaction.followup.send(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed)
 
     @app_commands.command(name="top", description="View the leaderboard")
     @app_commands.describe(category="Which leaderboard to view")

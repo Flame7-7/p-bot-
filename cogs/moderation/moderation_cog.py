@@ -22,7 +22,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
             if u:
                 u.is_banned = True
         await interaction.response.send_message(
-            f"🔨 **{user.display_name}** is banned from using the bot.", ephemeral=True
+            f"🔨 **{user.display_name}** is banned from using the bot."
         )
 
     @app_commands.command(name="botunban", description="[Admin] Unban a user from the bot")
@@ -34,7 +34,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
             if u:
                 u.is_banned = False
         await interaction.response.send_message(
-            f"✅ **{user.display_name}** can use the bot again.", ephemeral=True
+            f"✅ **{user.display_name}** can use the bot again."
         )
 
     @app_commands.command(name="resetuser", description="[Admin] Reset a user's stats and profile")
@@ -50,7 +50,7 @@ class ModerationCog(commands.Cog, name="Moderation"):
             if s:
                 s.total_given, s.total_received, s.daily_given, s.weekly_given = 0, 0, 0, 0
         await interaction.response.send_message(
-            f"✅ Reset **{user.display_name}**'s stats.", ephemeral=True
+            f"✅ Reset **{user.display_name}**'s stats."
         )
 
 
