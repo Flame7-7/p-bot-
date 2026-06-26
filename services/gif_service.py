@@ -70,9 +70,13 @@ class GifService:
             logger.warning("tenor fetch failed for %s: %s", category, e)
         return None
 
-    async def add_gif(self, category: str, url: str, weight: float = 1.0) -> GIF:
+    async def add_gif(
+        self, category: str, url: str, name: str | None = None, weight: float = 1.0
+    ) -> GIF:
         async with get_session() as session:
-            gif = GIF(category=category, url=url, weight=weight, source="manual")
+            gif = GIF(
+                category=category, url=url, name=name, weight=weight, source="manual"
+            )
             session.add(gif)
             await session.flush()
             await session.refresh(gif)

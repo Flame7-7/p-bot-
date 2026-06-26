@@ -551,3 +551,74 @@ class PaginatedView(DiscordUIV2View):
             pass  # Message editing handled by Discord automatically on timeout
         except discord.HTTPException:
             pass
+
+
+class PaginatedViewMarkdown(DiscordUIV2View):
+    """Modern pagination view with Discord UI v2 button styling for markdown content."""
+
+    def __init__(self, pages: list[str], timeout: float = 180.0) -> None:
+        super().__init__(timeout=timeout)
+        self.pages = pages
+        self.current_page = 0
+        self._update_buttons()
+
+    def _update_buttons(self) -> None:
+        """Update button states based on current page."""
+        total = len(self.pages)
+
+        # Update navigation buttons
+        for child in self.children:
+            if isinstance(child, Button):
+                if child.custom_id == "first_page":
+                    child.disabled = self.current_page == 0
+                elif child.custom_id == "prev_page":
+                    child.disabled = self.current_page == 0
+                elif child.custom_id == "next_page":
+                    child.disabled = self.current_page >= total - 1
+                elif child.custom_id == "last_page":
+                    child.disabled = self.current_page >= total - 1
+                elif child.custom_id == "page_indicator":
+                    child.label = f"Page {self.current_page + 1}/{total}"
+
+    @button(label="⏮️", style=discord.ButtonStyle.secondary, custom_id="first_page")
+    async def first_page(self, interaction: discord.Interaction, button: Button) -> None:
+        """Go to first page."""
+        self.current_page = 0
+        self._update_buttons()
+        await interaction.response.edit_message(content=self.pages[self.current_page], view=self)
+
+    @button(label="◀️", style=discord.ButtonStyle.primary, custom_id="prev_page")
+    async def prev_page(self, interaction: discord.Interaction, button: Button) -> None:
+        """Go to previous page."""
+        self.current_page = max(0, self.current_page - 1)
+        self._update_buttons()
+        await interaction.response.edit_message(content=self.pages[self.current_page], view=self)
+
+    @button(label="Page 1/1", style=discord.ButtonStyle.secondary, custom_id="page_indicator", disabled=True)
+    async def page_indicator(self, interaction: discord.Interaction, button: Button) -> None:
+        """Page indicator (non-interactive)."""
+        pass
+
+    @button(label="▶️", style=discord.ButtonStyle.primary, custom_id="next_page")
+    async def next_page(self, interaction: discord.Interaction, button: Button) -> None:
+        """Go to next page."""
+        self.current_page = min(len(self.pages) - 1, self.current_page + 1)
+        self._update_buttons()
+        await interaction.response.edit_message(content=self.pages[self.current_page], view=self)
+
+    @button(label="⏭️", style=discord.ButtonStyle.secondary, custom_id="last_page")
+    async def last_page(self, interaction: discord.Interaction, button: Button) -> None:
+        """Go to last page."""
+        self.current_page = len(self.pages) - 1
+        self._update_buttons()
+        await interaction.response.edit_message(content=self.pages[self.current_page], view=self)
+
+    async def on_timeout(self) -> None:
+        """Disable all buttons when view times out."""
+        for child in self.children:
+            if isinstance(child, Button):
+                child.disabled = True
+        try:
+            pass
+        except discord.HTTPException:
+            pass

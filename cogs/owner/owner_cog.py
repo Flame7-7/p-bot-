@@ -47,7 +47,7 @@ class OwnerCog(commands.Cog, name="Owner"):
         name_prefix: str,
         attachments: commands.Greedy[discord.Attachment],
     ) -> None:
-        """Bulk add multiple GIFs from attachments"""
+        """Bulk add multiple GIFs from attachments (up to 25)"""
         if not attachments:
             await ctx.send("❌ Please attach GIF files to this command.")
             return
@@ -56,13 +56,18 @@ class OwnerCog(commands.Cog, name="Owner"):
         failed = 0
         for i, attachment in enumerate(attachments[:25], start=1):
             try:
-                gif = await self.gif_service.add_gif(category, attachment.url, f"{name_prefix}_{i}")
+                gif = await self.gif_service.add_gif(
+                    category, attachment.url, name=f"{name_prefix}_{i}"
+                )
                 added += 1
             except Exception as e:
                 logger.error(f"Failed to add {attachment.filename}: {e}")
                 failed += 1
 
-        await ctx.send(f"✅ Added **{added}** GIFs to `{category}`. Failed: **{failed}**")
+        await ctx.send(
+            f"✅ Added **{added}** GIFs to `{category}`. "
+            f"Files named `{name_prefix}_1`, `{name_prefix}_2`, etc. Failed: **{failed}**"
+        )
 
     @commands.command(name="addgifsfromlist", hidden=True)
     @commands.is_owner()
@@ -91,16 +96,20 @@ class OwnerCog(commands.Cog, name="Owner"):
 
         added = 0
         failed = 0
-        async with aiohttp.ClientSession() as session:
-            for i, url in enumerate(urls[:50], start=1):
-                try:
-                    gif = await self.gif_service.add_gif(category, url, f"{name_prefix}_{i}")
-                    added += 1
-                except Exception as e:
-                    logger.error(f"Failed to add {url}: {e}")
-                    failed += 1
+        for i, url in enumerate(urls[:50], start=1):
+            try:
+                gif = await self.gif_service.add_gif(
+                    category, url, name=f"{name_prefix}_{i}"
+                )
+                added += 1
+            except Exception as e:
+                logger.error(f"Failed to add {url}: {e}")
+                failed += 1
 
-        await ctx.send(f"✅ Added **{added}** GIFs to `{category}`. Failed: **{failed}**")
+        await ctx.send(
+            f"✅ Added **{added}** GIFs to `{category}`. "
+            f"Files named `{name_prefix}_1`, `{name_prefix}_2`, etc. Failed: **{failed}**"
+        )
 
     @commands.command(name="clearcache", hidden=True)
     @commands.is_owner()

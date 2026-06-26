@@ -5,13 +5,13 @@ from discord import app_commands
 from discord.ext import commands
 
 from services.action_registry import get_by_category, get_all_categories
-from views.embeds import PaginatedView
+from views.embeds import PaginatedViewMarkdown
 
 CATEGORY_INFO = {
-    "affection": ("💕 Affection", 0xFF85A1),
-    "playful":   ("😄 Playful",   0xFFD166),
-    "emotional": ("💭 Emotional", 0xA8DADC),
-    "social":    ("🤝 Social",    0xB5EAD7),
+    "affection": ("Affection", "💕"),
+    "playful":   ("Playful", "😄"),
+    "emotional": ("Emotional", "💭"),
+    "social":    ("Social", "🤝"),
 }
 
 
@@ -21,105 +21,68 @@ class HelpCog(commands.Cog, name="Help"):
 
     @app_commands.command(name="help", description="View all bot commands")
     async def help(self, interaction: discord.Interaction) -> None:
-        pages: list[discord.Embed] = []
+        pages: list[str] = []
 
         # Page 1: Overview
-        overview = discord.Embed(
-            title="🌸 Roleplay Bot",
-            description=(
-                "A social roleplay bot with relationships, "
-                "achievements, leveling, and leaderboards!\n\n"
-                "**Browse by Category:**\n"
-                "• 💕 **Affection** - Show love and care\n"
-                "• 😄 **Playful** - Have fun together\n"
-                "• 💭 **Emotional** - Deep connections\n"
-                "• 🤝 **Social** - Interact with others\n\n"
-                "**Other Features:**\n"
-                "• 👤 Profile & Stats\n"
-                "• 💑 Relationships\n"
-                "• 🏆 Achievements\n"
-                "• 📊 Leaderboards\n"
-                "• 🎁 Economy\n"
-                "• ⚙️ Settings"
-            ),
-            color=0x7289DA,
+        overview = (
+            "# 🌸 Roleplay Bot\n\n"
+            "A social roleplay bot with relationships, achievements, leveling, and leaderboards!\n\n"
+            "## Browse by Category:\n"
+            "• 💕 **Affection** - Show love and care\n"
+            "• 😄 **Playful** - Have fun together\n"
+            "• 💭 **Emotional** - Deep connections\n"
+            "• 🤝 **Social** - Interact with others\n\n"
+            "## Other Features:\n"
+            "• 👤 Profile & Stats\n"
+            "• 💑 Relationships\n"
+            "• 🏆 Achievements\n"
+            "• 📊 Leaderboards\n"
+            "• 🎁 Economy\n"
+            "• ⚙️ Settings\n\n"
+            "### ⚡ Quick Start\n"
+            "`/hug @user` · `/profile` · `/propose @user` · `/top`"
         )
-        overview.add_field(
-            name="⚡ Quick Start",
-            value="`/hug @user` · `/profile` · `/propose @user` · `/top`",
-            inline=False,
-        )
-        overview.set_footer(text="Page 1/7")
         pages.append(overview)
 
         # Pages 2-5: One per category (dynamically generated)
-        categories = get_all_categories()
-        page_num = 2
-        for cat_key, (cat_label, color) in CATEGORY_INFO.items():
+        for cat_key, (cat_label, emoji) in CATEGORY_INFO.items():
             actions = get_by_category(cat_key)
             if not actions:
                 continue
-            embed = discord.Embed(
-                title=f"{cat_label} Commands",
-                description=f"Browse all {cat_label.lower()} roleplay actions.",
-                color=color,
-            )
+            
+            page_content = f"# {emoji} {cat_label} Commands\n\n"
+            page_content += f"Browse all {cat_label.lower()} roleplay actions.\n\n"
+            
             for action in actions:
                 note = " *(target optional)*" if action.self_targetable else ""
-                embed.add_field(
-                    name=f"/{action.name}{note}",
-                    value=(
-                        f"{action.description}\n"
-                        f"💕 `+{action.affection_gain}` · ✨ `+{action.xp_gain} XP` · "
-                        f"⏱️ `{action.cooldown_seconds}s`"
-                    ),
-                    inline=False,
+                page_content += (
+                    f"## `/{action.name}`{note}\n"
+                    f"{action.description}\n"
+                    f"- 💕 `+{action.affection_gain}` • ✨ `+{action.xp_gain} XP` • ⏱️ `{action.cooldown_seconds}s`\n\n"
                 )
-            embed.set_footer(text=f"Page {page_num}/7")
-            pages.append(embed)
-            page_num += 1
+            pages.append(page_content)
 
         # Last Page: Utility commands
-        other = discord.Embed(
-            title="🛠️ Other Commands",
-            description="Utility and management commands.",
-            color=0x7289DA,
+        other = (
+            "# 🛠️ Other Commands\n\n"
+            "Utility and management commands.\n\n"
+            "## 👤 Profile\n"
+            "`/profile` `/setbio` `/stats`\n\n"
+            "## 💑 Relationships\n"
+            "`/propose` `/partner` `/breakup` `/anniversary`\n\n"
+            "## 🏆 Achievements\n"
+            "`/achievements`\n\n"
+            "## 📊 Leaderboard\n"
+            "`/top affection|level|interactions`\n\n"
+            "## 🎁 Economy\n"
+            "`/daily`\n\n"
+            "## ⚙️ Settings\n"
+            "`/settings`"
         )
-        other.add_field(
-            name="👤 Profile",
-            value="`/profile` `/setbio` `/stats`",
-            inline=False,
-        )
-        other.add_field(
-            name="💑 Relationships",
-            value="`/propose` `/partner` `/breakup` `/anniversary`",
-            inline=False,
-        )
-        other.add_field(
-            name="🏆 Achievements",
-            value="`/achievements`",
-            inline=False,
-        )
-        other.add_field(
-            name="📊 Leaderboard",
-            value="`/top affection|level|interactions`",
-            inline=False,
-        )
-        other.add_field(
-            name="🎁 Economy",
-            value="`/daily`",
-            inline=False,
-        )
-        other.add_field(
-            name="⚙️ Settings",
-            value="`/settings`",
-            inline=False,
-        )
-        other.set_footer(text=f"Page {page_num}/7")
         pages.append(other)
 
         await interaction.response.send_message(
-            embed=pages[0], view=PaginatedView(pages)
+            content=pages[0], view=PaginatedViewMarkdown(pages)
         )
 
 
