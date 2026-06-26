@@ -1,4 +1,3 @@
---- cogs/relationships/relationships_cog.py (原始)
 from __future__ import annotations
 
 import discord

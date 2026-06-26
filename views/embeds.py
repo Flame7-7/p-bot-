@@ -1,4 +1,3 @@
---- views/embeds.py (原始)
 from __future__ import annotations
 
 import discord
@@ -286,8 +285,6 @@ class PaginatedView(DiscordUIV2View):
         except discord.HTTPException:
             pass
 
-+++ views/embeds.py (修改后)
-from __future__ import annotations
 
 import discord
 from discord.ui import Button, View, button
