@@ -3,23 +3,27 @@ from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
+from discord.ui import Button, View
 
 from repositories.relationship_repository import RelationshipRepository
-from views.embeds import build_relationship_embed
+from views.embeds import build_relationship_embed, DiscordUIV2View
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 
-class ProposalView(discord.ui.View):
+class ProposalView(DiscordUIV2View):
+    """Modern proposal view with Discord UI v2 styled buttons."""
+    
     def __init__(self, proposer: discord.Member, proposal_id: int, repo: RelationshipRepository) -> None:
         super().__init__(timeout=86400)
         self.proposer = proposer
         self.proposal_id = proposal_id
         self.repo = repo
-
-    @discord.ui.button(label="💕 Accept", style=discord.ButtonStyle.success)
-    async def accept(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    
+    @Button(label="💕 Accept", style=discord.ButtonStyle.success, custom_id="accept_proposal")
+    async def accept(self, interaction: discord.Interaction, button: Button) -> None:
+        """Accept the relationship proposal."""
         rel = await self.repo.accept_proposal(self.proposal_id)
         if not rel:
             await interaction.response.send_message("This proposal has expired.", ephemeral=True)
@@ -30,15 +34,22 @@ class ProposalView(discord.ui.View):
             description=f"{self.proposer.mention} and {interaction.user.mention} are now partners! 💕",
             color=0xFF85A1,
         )
+        embed.set_footer(text="Wishing you both happiness together!")
+        embed.timestamp = discord.utils.utcnow()
         await interaction.response.edit_message(embed=embed, view=None)
-
-    @discord.ui.button(label="💔 Decline", style=discord.ButtonStyle.danger)
-    async def decline(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    
+    @Button(label="💔 Decline", style=discord.ButtonStyle.danger, custom_id="decline_proposal")
+    async def decline(self, interaction: discord.Interaction, button: Button) -> None:
+        """Decline the relationship proposal."""
         await self.repo.decline_proposal(self.proposal_id)
         self.stop()
-        await interaction.response.edit_message(
-            content=f"💔 {interaction.user.display_name} declined.", embed=None, view=None
+        embed = discord.Embed(
+            title="💔 Proposal Declined",
+            description=f"{interaction.user.display_name} declined the proposal.",
+            color=0xED4245,
         )
+        embed.timestamp = discord.utils.utcnow()
+        await interaction.response.edit_message(embed=embed, view=None)
 
 
 class RelationshipsCog(commands.Cog, name="Relationships"):
@@ -65,9 +76,11 @@ class RelationshipsCog(commands.Cog, name="Relationships"):
         proposal = await self.repo.create_proposal(interaction.user.id, user.id)
         embed = discord.Embed(
             title="💍 Proposal!",
-            description=f"{interaction.user.mention} is proposing to {user.mention}!\nExpires in 24 hours.",
-            color=0xFFD166,
+            description=f"{interaction.user.mention} is proposing to {user.mention}!\n*Expires in 24 hours*",
+            color=0xFFB347,
         )
+        embed.set_footer(text="Choose wisely!")
+        embed.timestamp = discord.utils.utcnow()
         view = ProposalView(interaction.user, proposal.id, self.repo)  # type: ignore[arg-type]
         await interaction.response.send_message(content=user.mention, embed=embed, view=view)
 
@@ -94,8 +107,10 @@ class RelationshipsCog(commands.Cog, name="Relationships"):
         embed = discord.Embed(
             title="💔 Relationship Ended",
             description=f"{interaction.user.display_name} ended their relationship.",
-            color=0xFF0000,
+            color=0xED4245,
         )
+        embed.set_footer(text="New beginnings await...")
+        embed.timestamp = discord.utils.utcnow()
         await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name="anniversary", description="Check your relationship anniversary")
@@ -111,7 +126,9 @@ class RelationshipsCog(commands.Cog, name="Relationships"):
             description=f"You've been together for **{days} day{'s' if days != 1 else ''}**! 💕",
             color=0xFF85A1,
         )
-        embed.add_field(name="Started", value=rel.started_at.strftime("%B %d, %Y"))
+        embed.add_field(name="Started", value=rel.started_at.strftime("%b %d, %Y"))
+        embed.set_footer(text="May your bond grow stronger!")
+        embed.timestamp = discord.utils.utcnow()
         await interaction.response.send_message(embed=embed)
 
 
