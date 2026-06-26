@@ -50,17 +50,8 @@ async def _run(
         )
 
 
-def _build_cog(bot: commands.Bot) -> None:
-    """
-    Attach all action commands directly to RoleplayCog as properly-typed
-    methods. Each method is defined with a real function signature so
-    discord.py's parameter extractor works on every Python version.
-    """
-    pass  # Commands are defined below as real methods
-
-
 class RoleplayCog(commands.Cog, name="Roleplay"):
-    """All 32 roleplay slash commands."""
+    """All 62 roleplay slash commands."""
 
     # ── Affection ─────────────────────────────────────────────────────────────
 
@@ -138,7 +129,7 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
     async def throw(self, interaction: discord.Interaction, target: discord.Member) -> None:
         await _run(interaction, "throw", target)
 
-    # ── Emotional (target optional) ────────────────────────────────────────────
+    # ── Emotional (target optional) ───────────────────────────────────────────
 
     @app_commands.command(name="cry", description="Express that you're crying")
     async def cry(self, interaction: discord.Interaction, target: discord.Member | None = None) -> None:
@@ -198,7 +189,129 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
     async def glare(self, interaction: discord.Interaction, target: discord.Member) -> None:
         await _run(interaction, "glare", target)
 
+    # ── Intimate / NSFW ───────────────────────────────────────────────────────
+
+    @app_commands.command(name="fuck", description="Have sex with someone")
+    async def fuck(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "fuck", target)
+
+    @app_commands.command(name="blowjob", description="Give someone a blowjob")
+    async def blowjob(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "blowjob", target)
+
+    @app_commands.command(name="creampie", description="Creampie someone")
+    async def creampie(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "creampie", target)
+
+    @app_commands.command(name="moan", description="Moan at/for someone")
+    async def moan(self, interaction: discord.Interaction, target: discord.Member | None = None) -> None:
+        await _run(interaction, "moan", target)
+
+    @app_commands.command(name="strip", description="Strip for someone")
+    async def strip(self, interaction: discord.Interaction, target: discord.Member | None = None) -> None:
+        await _run(interaction, "strip", target)
+
+    @app_commands.command(name="spank", description="Spank someone")
+    async def spank(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "spank", target)
+
+    @app_commands.command(name="grope", description="Grope someone")
+    async def grope(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "grope", target)
+
+    @app_commands.command(name="fingerfuck", description="Finger someone")
+    async def fingerfuck(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "fingerfuck", target)
+
+    @app_commands.command(name="tease", description="Tease someone sexually")
+    async def tease(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "tease", target)
+
+    @app_commands.command(name="seduce", description="Seduce someone")
+    async def seduce(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "seduce", target)
+
+    @app_commands.command(name="makeout", description="Make out with someone")
+    async def makeout(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "makeout", target)
+
+    @app_commands.command(name="ride", description="Ride someone")
+    async def ride(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "ride", target)
+
+    @app_commands.command(name="cum", description="Cum on/for someone")
+    async def cum(self, interaction: discord.Interaction, target: discord.Member | None = None) -> None:
+        await _run(interaction, "cum", target)
+
+    @app_commands.command(name="undress", description="Undress someone")
+    async def undress(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "undress", target)
+
+    @app_commands.command(name="lickout", description="Go down on someone")
+    async def lickout(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "lickout", target)
+
+    @app_commands.command(name="handjob", description="Give someone a handjob")
+    async def handjob(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "handjob", target)
+
+    @app_commands.command(name="titfuck", description="Give someone a titfuck")
+    async def titfuck(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "titfuck", target)
+
+    @app_commands.command(name="anal", description="Have anal sex with someone")
+    async def anal(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "anal", target)
+
+    @app_commands.command(name="bondage", description="Tie someone up")
+    async def bondage(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "bondage", target)
+
+    @app_commands.command(name="dominate", description="Dominate someone")
+    async def dominate(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "dominate", target)
+
+    @app_commands.command(name="submit", description="Submit to someone")
+    async def submit(self, interaction: discord.Interaction, target: discord.Member | None = None) -> None:
+        await _run(interaction, "submit", target)
+
+    @app_commands.command(name="choke", description="Choke someone during intimacy")
+    async def choke(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "choke", target)
+
+    @app_commands.command(name="edging", description="Edge someone relentlessly")
+    async def edging(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "edging", target)
+
+    @app_commands.command(name="gangbang", description="Gangbang someone")
+    async def gangbang(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "gangbang", target)
+
+    @app_commands.command(name="threesome", description="Have a threesome with someone")
+    async def threesome(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "threesome", target)
+
+    @app_commands.command(name="facesit", description="Sit on someone's face")
+    async def facesit(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "facesit", target)
+
+    @app_commands.command(name="cum_facial", description="Give someone a facial")
+    async def cum_facial(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "cum_facial", target)
+
+    @app_commands.command(name="roleplay_sex", description="Do a sexual roleplay with someone")
+    async def roleplay_sex(self, interaction: discord.Interaction, target: discord.Member) -> None:
+        await _run(interaction, "roleplay_sex", target)
+
+    @app_commands.command(name="orgasm", description="Have an orgasm because of someone")
+    async def orgasm(self, interaction: discord.Interaction, target: discord.Member | None = None) -> None:
+        await _run(interaction, "orgasm", target)
+
+    @app_commands.command(name="squirt", description="Squirt because of someone")
+    async def squirt(self, interaction: discord.Interaction, target: discord.Member | None = None) -> None:
+        await _run(interaction, "squirt", target)
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(RoleplayCog(bot))
-    logger.info("RoleplayCog loaded with 32 commands")
+    logger.info("RoleplayCog loaded with 62 commands")
