@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import io
+import aiohttp
 import discord
 from discord.ext import commands
+from typing import Optional
 
 from repositories.achievement_repository import AchievementRepository
 from services.gif_service import GifService
@@ -34,6 +37,70 @@ class OwnerCog(commands.Cog, name="Owner"):
     async def addgif(self, ctx: commands.Context, category: str, *, url: str) -> None:
         gif = await self.gif_service.add_gif(category, url)
         await ctx.send(f"✅ Added GIF `#{gif.id}` to `{category}`.")
+
+    @commands.command(name="addgifs", hidden=True)
+    @commands.is_owner()
+    async def addgifs(
+        self,
+        ctx: commands.Context,
+        category: str,
+        name_prefix: str,
+        attachments: commands.Greedy[discord.Attachment],
+    ) -> None:
+        """Bulk add multiple GIFs from attachments"""
+        if not attachments:
+            await ctx.send("❌ Please attach GIF files to this command.")
+            return
+
+        added = 0
+        failed = 0
+        for i, attachment in enumerate(attachments[:25], start=1):
+            try:
+                gif = await self.gif_service.add_gif(category, attachment.url, f"{name_prefix}_{i}")
+                added += 1
+            except Exception as e:
+                logger.error(f"Failed to add {attachment.filename}: {e}")
+                failed += 1
+
+        await ctx.send(f"✅ Added **{added}** GIFs to `{category}`. Failed: **{failed}**")
+
+    @commands.command(name="addgifsfromlist", hidden=True)
+    @commands.is_owner()
+    async def addgifsfromlist(
+        self,
+        ctx: commands.Context,
+        category: str,
+        name_prefix: str,
+        text_file: Optional[discord.Attachment] = None,
+    ) -> None:
+        """Add GIFs from a text file containing URLs (one per line)"""
+        if not text_file or not text_file.filename.endswith(".txt"):
+            await ctx.send("❌ Please attach a .txt file with GIF URLs (one per line).")
+            return
+
+        try:
+            content = await text_file.read()
+            urls = [line.strip() for line in content.decode("utf-8").splitlines() if line.strip()]
+        except Exception as e:
+            await ctx.send(f"❌ Failed to read file: {e}")
+            return
+
+        if not urls:
+            await ctx.send("❌ No URLs found in the file.")
+            return
+
+        added = 0
+        failed = 0
+        async with aiohttp.ClientSession() as session:
+            for i, url in enumerate(urls[:50], start=1):
+                try:
+                    gif = await self.gif_service.add_gif(category, url, f"{name_prefix}_{i}")
+                    added += 1
+                except Exception as e:
+                    logger.error(f"Failed to add {url}: {e}")
+                    failed += 1
+
+        await ctx.send(f"✅ Added **{added}** GIFs to `{category}`. Failed: **{failed}**")
 
     @commands.command(name="clearcache", hidden=True)
     @commands.is_owner()

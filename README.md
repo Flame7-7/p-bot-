@@ -81,10 +81,25 @@ Done. All 32 commands are live.
 
 ## 🖼️ Adding GIFs
 
+### Single GIF
 ```
 @YourBot addgif hug https://media.tenor.com/your-hug-gif.gif
 @YourBot addgif kiss https://media.tenor.com/your-kiss-gif.gif
 ```
+
+### Bulk Upload (Multiple Files)
+Drag and drop up to 25 GIF files into Discord:
+```
+@YourBot addgifs <category> <name_prefix> [attachments...]
+```
+Example: `@YourBot addgifs hug cuddle` with 10 GIF attachments → creates `cuddle_1`, `cuddle_2`, etc.
+
+### Bulk Upload from URL List
+Create a `urls.txt` file with one GIF URL per line:
+```
+@YourBot addgifsfromlist <category> <name_prefix> [text_file]
+```
+Example: `@YourBot addgifsfromlist pat pat` with `urls.txt` containing 20 URLs → creates `pat_1`, `pat_2`, etc.
 
 Or set `TENOR_API_KEY` in `.env` for automatic GIF fetching as fallback when no local GIFs exist.
 
@@ -122,7 +137,9 @@ The `/myaction` slash command is created automatically. Nothing else to change.
 |---|---|
 | `@Bot sync` | Sync slash commands |
 | `@Bot seed` | Re-seed achievements |
-| `@Bot addgif <category> <url>` | Add a GIF |
+| `@Bot addgif <category> <url>` | Add a single GIF |
+| `@Bot addgifs <category> <prefix> [files...]` | Bulk add up to 25 GIFs from attachments |
+| `@Bot addgifsfromlist <category> <prefix> [file.txt]` | Add GIFs from URL list file |
 | `@Bot clearcache [prefix]` | Clear in-memory cache |
 | `@Bot botstats` | View bot statistics |
 
