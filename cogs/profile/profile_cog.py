@@ -72,18 +72,23 @@ class ProfileCog(commands.Cog, name="Profile"):
         db_stats = await self.user_repo.get_stats(target.id)
         profile = await self.user_repo.get_profile(target.id)
 
-        embed = discord.Embed(title=f"📊 {target.display_name}'s Stats", color=0x7289DA)
+        embed = discord.Embed(
+            title=f"📊 {target.display_name}'s Stats",
+            color=0x5865F2,
+        )
         embed.set_thumbnail(url=str(target.display_avatar.url))
         if db_stats:
-            embed.add_field(name="🎯 Given", value=f"{db_stats.total_given:,}", inline=True)
-            embed.add_field(name="🎁 Received", value=f"{db_stats.total_received:,}", inline=True)
-            embed.add_field(name="📅 Today", value=f"{db_stats.daily_given:,}", inline=True)
+            embed.add_field(name="🎯 Given", value=f"`{db_stats.total_given:,}`", inline=True)
+            embed.add_field(name="🎁 Received", value=f"`{db_stats.total_received:,}`", inline=True)
+            embed.add_field(name="📅 Today", value=f"`{db_stats.daily_given:,}`", inline=True)
             if db_stats.favorite_action:
-                embed.add_field(name="❤️ Favorite", value=f"/{db_stats.favorite_action}", inline=True)
+                embed.add_field(name="❤️ Favorite", value=f"`/{db_stats.favorite_action}`", inline=True)
         if profile:
-            embed.add_field(name="⭐ Level", value=str(profile.level), inline=True)
-            embed.add_field(name="✨ Total XP", value=f"{profile.total_xp:,}", inline=True)
-            embed.add_field(name="💕 Affection", value=f"{profile.affection:,}", inline=True)
+            embed.add_field(name="⭐ Level", value=f"`{profile.level}`", inline=True)
+            embed.add_field(name="✨ Total XP", value=f"`{profile.total_xp:,}`", inline=True)
+            embed.add_field(name="💕 Affection", value=f"`{profile.affection:,}`", inline=True)
+        embed.set_footer(text="Statistics are updated in real-time")
+        embed.timestamp = discord.utils.utcnow()
         await interaction.followup.send(embed=embed)
 
 

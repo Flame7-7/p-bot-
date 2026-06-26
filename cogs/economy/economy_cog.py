@@ -53,7 +53,7 @@ class EconomyCog(commands.Cog, name="Economy"):
         cache_set(f"daily:{uid}", True, ttl=86400)
         cache_set(f"streak:{uid}", {"streak": streak}, ttl=172800)
 
-        embed = discord.Embed(title="🎁 Daily Reward!", color=0xFFD166)
+        embed = discord.Embed(title="🎁 Daily Reward!", color=0xFFB347)
         embed.set_thumbnail(url=str(interaction.user.display_avatar.url))
         embed.add_field(name="✨ XP", value=f"+{total_xp}", inline=True)
         embed.add_field(name="💕 Affection", value=f"+{config.daily_affection}", inline=True)
@@ -63,6 +63,7 @@ class EconomyCog(commands.Cog, name="Economy"):
         if leveled_up:
             embed.add_field(name="🎉 Level Up!", value=f"You reached **Level {new_level}**!", inline=False)
         embed.set_footer(text=f"Max streak: {config.max_streak} days")
+        embed.timestamp = discord.utils.utcnow()
         await interaction.followup.send(embed=embed, ephemeral=True)
 
     @app_commands.command(name="top", description="View the leaderboard")
@@ -85,20 +86,24 @@ class EconomyCog(commands.Cog, name="Economy"):
             await interaction.followup.send("No data yet! Start interacting to appear here.")
             return
 
-        # Build paginated embeds
+        # Build paginated embeds with Discord UI v2 styling
         pages: list[discord.Embed] = []
         chunks = [rows[i:i + PAGE_SIZE] for i in range(0, len(rows), PAGE_SIZE)]
         for page_num, chunk in enumerate(chunks):
-            embed = discord.Embed(title=f"🏆 {category.name} Leaderboard", color=0xFFD700)
+            embed = discord.Embed(
+                title=f"🏆 {category.name} Leaderboard",
+                color=0xFEE75C,
+            )
             lines = []
             for i, row in enumerate(chunk):
                 rank = page_num * PAGE_SIZE + i
                 prefix = MEDALS[rank] if rank < 3 else f"**#{rank + 1}**"
                 member = interaction.guild.get_member(row["user_id"]) if interaction.guild else None
                 name = member.display_name if member else f"User {row['user_id']}"
-                lines.append(f"{prefix} {name} — **{row['value']:,}**")
+                lines.append(f"{prefix} **{name}** — `{row['value']:,}`")
             embed.description = "\n".join(lines)
             embed.set_footer(text=f"Page {page_num + 1}/{len(chunks)}  •  Updates every 60s")
+            embed.timestamp = discord.utils.utcnow()
             pages.append(embed)
 
         if len(pages) == 1:
