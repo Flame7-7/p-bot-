@@ -21,7 +21,7 @@ class ProposalView(DiscordUIV2View):
         self.proposal_id = proposal_id
         self.repo = repo
 
-    @Button(label="💕 Accept", style=discord.ButtonStyle.success, custom_id="accept_proposal")
+    @button(label="💕 Accept", style=discord.ButtonStyle.success, custom_id="accept_proposal")
     async def accept(self, interaction: discord.Interaction, button: Button) -> None:
         """Accept the relationship proposal."""
         rel = await self.repo.accept_proposal(self.proposal_id)
@@ -38,7 +38,7 @@ class ProposalView(DiscordUIV2View):
         embed.timestamp = discord.utils.utcnow()
         await interaction.response.edit_message(embed=embed, view=None)
 
-    @Button(label="💔 Decline", style=discord.ButtonStyle.danger, custom_id="decline_proposal")
+    @button(label="💔 Decline", style=discord.ButtonStyle.danger, custom_id="decline_proposal")
     async def decline(self, interaction: discord.Interaction, button: Button) -> None:
         """Decline the relationship proposal."""
         await self.repo.decline_proposal(self.proposal_id)
