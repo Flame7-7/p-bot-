@@ -138,6 +138,7 @@ class GIF(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     category: Mapped[str] = mapped_column(String(50))
     url: Mapped[str] = mapped_column(String(512))
+    name: Mapped[str] = mapped_column(String(100), nullable=True)
     weight: Mapped[float] = mapped_column(Float, default=1.0)
     is_disabled: Mapped[bool] = mapped_column(Boolean, default=False)
     source: Mapped[str] = mapped_column(String(50), default="manual")
