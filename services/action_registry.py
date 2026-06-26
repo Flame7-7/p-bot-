@@ -41,6 +41,11 @@ def get_by_category(category: str) -> list[ActionConfig]:
     return [a for a in _registry.values() if a.category == category]
 
 
+def get_all_categories() -> list[str]:
+    """Return a list of all unique categories."""
+    return list(set(a.category for a in _registry.values()))
+
+
 # ── Affection (10) ────────────────────────────────────────────────────────────
 
 register(ActionConfig(
