@@ -133,10 +133,6 @@ class RelationshipsCog(commands.Cog, name="Relationships"):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(RelationshipsCog(bot))
-
-+++ cogs/relationships/relationships_cog.py (修改后)
-from __future__ import annotations
 
 import discord
 from discord import app_commands

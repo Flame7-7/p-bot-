@@ -286,31 +286,12 @@ class PaginatedView(DiscordUIV2View):
             pass
 
 
-import discord
-from discord.ui import Button, View, button
-
-from services.roleplay_service import ActionResult
-
-# Discord UI v2 color palette - softer, modern colors
-CATEGORY_COLORS = {
-    "affection": 0xF47FFF,      # Vibrant pink
-    "playful":   0xFFB347,      # Warm orange
-    "emotional": 0x58B6FF,      # Soft blue
-    "social":    0x77D958,      # Fresh green
-}
-
-# Discord blurple for general UI elements
-DISCORD_BLURPLE = 0x5865F2
-DISCORD_GREEN = 0x57F287
-DISCORD_RED = 0xED4245
-DISCORD_GOLD = 0xFEE75C
-
-
-def build_action_embed(
-    result: ActionResult,
-    category: str,
-    author: discord.Member,
-    target: discord.Member | None = None,
+def build_profile_embed(
+    user: discord.Member,
+    profile,
+    stats,
+    achievements,
+    badges: list[str],
 ) -> discord.Embed:
     """Build a modern Discord UI v2 styled action embed."""
     color = CATEGORY_COLORS.get(category, DISCORD_BLURPLE)

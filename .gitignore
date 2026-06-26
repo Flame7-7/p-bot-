@@ -4,6 +4,7 @@
 __pycache__/
 *.o
 *.obj
+*.out
 
 # Dependencies
 .venv/
@@ -25,29 +26,22 @@ node_modules/
 .idea/
 
 # Coverage reports
+.coverage
 coverage/
 htmlcov/
-.coverage
 
 # Python specific
 *.pyc
-__pycache__/
 *.pyo
 *.pyd
 .Python
 *.so
-*.egg-info/
-.eggs/
 
-# Build directories
-build/
-dist/
-*.egg
-
-# Testing
-.pytest_cache/
-.mypy_cache/
-.hypothesis/
+# Backup files
+*~
+*.bak
+*.swp
+*.swo
 
 # OS generated files
 .DS_Store
