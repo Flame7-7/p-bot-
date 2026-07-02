@@ -1,1 +1,1 @@
-Nothing needs to be added to .gitignore since only a Python source file (`migrate_gifs.py`) was added, which is not a build artifact, dependency, or temporary file.
+Nothing needs to be added to .gitignore since only a markdown file was added and no build artifacts, dependencies, or temporary files were included in the changes.
