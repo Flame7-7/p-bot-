@@ -47,15 +47,25 @@ class OwnerCog(commands.Cog, name="Owner"):
         name_prefix: str,
         attachments: commands.Greedy[discord.Attachment],
     ) -> None:
-        """Bulk add multiple GIFs from attachments (up to 25)"""
+        """Bulk add multiple GIFs from attachments (up to 25). Supports .gif, .webp, .mp4, and other video/image formats."""
         if not attachments:
-            await ctx.send("❌ Please attach GIF files to this command.")
+            await ctx.send("❌ Please attach GIF/video files to this command.")
             return
+
+        # Valid file extensions
+        valid_extensions = {'.gif', '.webp', '.mp4', '.mov', '.avi', '.webm', '.jpg', '.jpeg', '.png'}
 
         added = 0
         failed = 0
         for i, attachment in enumerate(attachments[:25], start=1):
             try:
+                # Check file extension
+                filename_lower = attachment.filename.lower()
+                if not any(filename_lower.endswith(ext) for ext in valid_extensions):
+                    logger.warning(f"Skipping {attachment.filename}: invalid file type")
+                    failed += 1
+                    continue
+                    
                 gif = await self.gif_service.add_gif(
                     category, attachment.url, name=f"{name_prefix}_{i}"
                 )

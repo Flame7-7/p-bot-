@@ -619,6 +619,217 @@ class GamesCog(commands.Cog, name="Games"):
                 cache_set(f"guess:{uid}", None)
                 break
 
+    @app_commands.command(
+        name="rps_pvp",
+        description="Challenge another player to Rock Paper Scissors"
+    )
+    @app_commands.describe(opponent="The player you want to challenge")
+    async def rps_pvp(
+        self,
+        interaction: discord.Interaction,
+        opponent: discord.User
+    ) -> None:
+        """Challenge another player to Rock Paper Scissors."""
+        await interaction.response.defer()
+        
+        if opponent.id == interaction.user.id:
+            await interaction.followup.send("❌ You can't play against yourself!", ephemeral=True)
+            return
+        
+        if opponent.bot:
+            await interaction.followup.send("❌ You can't challenge bots! Use `/rps` instead.", ephemeral=True)
+            return
+        
+        # Check cooldowns
+        if cache_get(f"rps_pvp:{interaction.user.id}"):
+            await interaction.followup.send("⏳ You're already in a game! Wait a few seconds.", ephemeral=True)
+            return
+        
+        # Send challenge
+        embed = discord.Embed(
+            title="🎮 Rock Paper Scissors Challenge!",
+            description=f"{interaction.user.mention} challenges {opponent.mention} to Rock Paper Scissors!",
+            color=0x7289DA,
+        )
+        embed.add_field(
+            name="How to Accept",
+            value="Click the button below to accept the challenge!",
+            inline=False
+        )
+        embed.set_footer(text="Winner gets +15 XP!")
+        
+        view = RPSChallengeView(interaction.user, opponent, self)
+        await interaction.followup.send(embed=embed, view=view)
+
+
+class RPSChoiceView(discord.ui.View):
+    """View for players to choose their RPS move."""
+    
+    def __init__(self, player1: discord.User, player2: discord.User, game_cog: "GamesCog"):
+        super().__init__(timeout=60.0)
+        self.player1 = player1
+        self.player2 = player2
+        self.game_cog = game_cog
+        self.p1_choice: str | None = None
+        self.p2_choice: str | None = None
+        self.p1_voted = False
+        self.p2_voted = False
+    
+    @discord.ui.button(label="Rock 🪨", style=discord.ButtonStyle.primary)
+    async def rock(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self._handle_choice(interaction, "rock")
+    
+    @discord.ui.button(label="Paper 📄", style=discord.ButtonStyle.primary)
+    async def paper(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self._handle_choice(interaction, "paper")
+    
+    @discord.ui.button(label="Scissors ✂️", style=discord.ButtonStyle.primary)
+    async def scissors(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await self._handle_choice(interaction, "scissors")
+    
+    async def _handle_choice(self, interaction: discord.Interaction, choice: str):
+        uid = interaction.user.id
+        
+        if uid == self.player1.id:
+            if self.p1_voted:
+                await interaction.response.send_message("✅ You've already chosen! Waiting for opponent...", ephemeral=True)
+                return
+            self.p1_choice = choice
+            self.p1_voted = True
+            await interaction.response.send_message("✅ Choice locked in! Waiting for opponent...", ephemeral=True)
+        elif uid == self.player2.id:
+            if self.p2_voted:
+                await interaction.response.send_message("✅ You've already chosen! Waiting for opponent...", ephemeral=True)
+                return
+            self.p2_choice = choice
+            self.p2_voted = True
+            await interaction.response.send_message("✅ Choice locked in! Waiting for opponent...", ephemeral=True)
+        else:
+            await interaction.response.send_message("❌ This game is not for you!", ephemeral=True)
+            return
+        
+        # Check if both voted
+        if self.p1_voted and self.p2_voted:
+            await self.reveal_results(interaction)
+    
+    async def reveal_results(self, interaction: discord.Interaction):
+        self.stop()
+        for item in self.children:
+            item.disabled = True
+        
+        emojis = {"rock": "🪨", "paper": "📄", "scissors": "✂️"}
+        
+        # Determine winner
+        result = ""
+        winner = None
+        xp_reward = 15
+        
+        if self.p1_choice == self.p2_choice:
+            result = "🤝 It's a tie!"
+        elif (
+            (self.p1_choice == "rock" and self.p2_choice == "scissors") or
+            (self.p1_choice == "paper" and self.p2_choice == "rock") or
+            (self.p1_choice == "scissors" and self.p2_choice == "paper")
+        ):
+            result = f"🎉 {self.player1.mention} wins!"
+            winner = self.player1.id
+            await self.game_cog.user_repo.add_xp(winner, xp_reward)
+        else:
+            result = f"🎉 {self.player2.mention} wins!"
+            winner = self.player2.id
+            await self.game_cog.user_repo.add_xp(winner, xp_reward)
+        
+        embed = discord.Embed(
+            title="🎮 Rock Paper Scissors - Results!",
+            color=0x7289DA,
+        )
+        
+        embed.add_field(
+            name=f"{self.player1.display_name}'s Choice",
+            value=f"{emojis[self.p1_choice]} **{self.p1_choice.title()}**",
+            inline=True
+        )
+        
+        embed.add_field(
+            name=f"{self.player2.display_name}'s Choice",
+            value=f"{emojis[self.p2_choice]} **{self.p2_choice.title()}**",
+            inline=True
+        )
+        
+        embed.add_field(
+            name="Result",
+            value=result,
+            inline=False
+        )
+        
+        if winner:
+            embed.add_field(
+                name="🎁 Reward",
+                value=f"+{xp_reward} XP",
+                inline=True
+            )
+        
+        embed.timestamp = discord.utils.utcnow()
+        
+        await interaction.channel.send(embed=embed)
+
+
+class RPSChallengeView(discord.ui.View):
+    """View for accepting an RPS challenge."""
+    
+    def __init__(self, challenger: discord.User, opponent: discord.User, game_cog: "GamesCog"):
+        super().__init__(timeout=60.0)
+        self.challenger = challenger
+        self.opponent = opponent
+        self.game_cog = game_cog
+    
+    @discord.ui.button(label="Accept Challenge 🎮", style=discord.ButtonStyle.success)
+    async def accept(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if interaction.user.id != self.opponent.id:
+            await interaction.response.send_message("❌ Only the challenged player can accept!", ephemeral=True)
+            return
+        
+        self.stop()
+        for item in self.children:
+            item.disabled = True
+        
+        # Start the game
+        embed = discord.Embed(
+            title="🎮 Rock Paper Scissors PvP",
+            description=f"{self.challenger.mention} vs {self.opponent.mention}\n\nBoth players, choose your move!",
+            color=0x7289DA,
+        )
+        
+        await interaction.response.edit_message(embed=embed, view=None)
+        
+        # Start the choice phase
+        game_view = RPSChoiceView(self.challenger, self.opponent, self.game_cog)
+        await interaction.channel.send(
+            content="🎮 **Rock Paper Scissors PvP has started!**",
+            embed=discord.Embed(
+                description="Make your choice privately!",
+                color=0x7289DA
+            ),
+            view=game_view
+        )
+    
+    @discord.ui.button(label="Decline ❌", style=discord.ButtonStyle.danger)
+    async def decline(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if interaction.user.id != self.opponent.id:
+            await interaction.response.send_message("❌ Only the challenged player can decline!", ephemeral=True)
+            return
+        
+        self.stop()
+        for item in self.children:
+            item.disabled = True
+        
+        embed = discord.Embed(
+            title="❌ Challenge Declined",
+            description=f"{self.opponent.mention} declined the challenge.",
+            color=0xE74C3C,
+        )
+        await interaction.response.edit_message(embed=embed, view=None)
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(GamesCog(bot))

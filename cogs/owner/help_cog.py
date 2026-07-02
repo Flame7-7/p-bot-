@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from services.action_registry import get_by_category, get_all_categories
+from services.action_registry import get_by_category
 from views.embeds import PaginatedViewMarkdown
 
 CATEGORY_INFO = {
