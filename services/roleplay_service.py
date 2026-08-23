@@ -7,6 +7,7 @@ import discord
 from repositories.achievement_repository import AchievementRepository
 from repositories.interaction_repository import InteractionRepository
 from repositories.relationship_repository import RelationshipRepository
+from repositories.roleplay_profile_repository import RoleplayProfileRepository
 from repositories.user_repository import UserRepository
 from services.action_registry import ActionConfig, get_action
 from services.gif_service import GifService
@@ -37,6 +38,7 @@ class RoleplayService:
         self.interaction_repo = InteractionRepository()
         self.relationship_repo = RelationshipRepository()
         self.achievement_repo = AchievementRepository()
+        self.roleplay_profile_repo = RoleplayProfileRepository()
 
     async def execute(
         self,
@@ -116,9 +118,19 @@ class RoleplayService:
         # GIF
         gif_url = await self.gif_service.get_random_gif(action.gif_category)
 
-        # Response text
+        # Response text -- gender is entirely optional here (unlike the
+        # requires_verification() gate in verification.py): a user who has
+        # never run /consent just gets neutral pronouns, since none of
+        # these commands (hug/pat/etc.) ever required setup before.
+        author_profile = await self.roleplay_profile_repo.get(author.id)
+        target_profile = await self.roleplay_profile_repo.get(target.id) if target else None
         target_name = target.display_name if target else author.display_name
-        message = action.get_response(author.display_name, target_name)
+        message = action.get_response(
+            author.display_name,
+            target_name,
+            author_gender=author_profile.gender if author_profile else None,
+            target_gender=target_profile.gender if target_profile else None,
+        )
 
         return ActionResult(
             message=message,

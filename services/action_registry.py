@@ -4,6 +4,19 @@ import random
 from dataclasses import dataclass, field
 
 
+# Role/gender -> (subject, object, possessive) pronoun forms, e.g.
+# "{author_pronoun} blushed" / "kissed {target_pronoun_obj}" / "hugged
+# {target_possessive} friend". Keyed by the same values
+# RoleplayProfileRepository.VALID_GENDERS accepts, plus a neutral fallback
+# used whenever a user hasn't run /consent (or picked non-binary).
+PRONOUNS: dict[str, dict[str, str]] = {
+    "male": {"subject": "he", "object": "him", "possessive": "his"},
+    "female": {"subject": "she", "object": "her", "possessive": "her"},
+    "non-binary": {"subject": "they", "object": "them", "possessive": "their"},
+    "neutral": {"subject": "they", "object": "them", "possessive": "their"},
+}
+
+
 @dataclass
 class ActionConfig:
     name: str
@@ -17,9 +30,37 @@ class ActionConfig:
     requires_target: bool = True
     description: str = ""
 
-    def get_response(self, author: str, target: str | None = None) -> str:
+    def get_response(
+        self,
+        author: str,
+        target: str | None = None,
+        author_gender: str | None = None,
+        target_gender: str | None = None,
+    ) -> str:
+        """Renders a random response template.
+
+        `author_gender`/`target_gender` are optional role selections from
+        /consent (one of PRONOUNS' keys). Templates that don't reference
+        the pronoun placeholders below are completely unaffected --
+        str.format() ignores keyword arguments a template doesn't use, so
+        this stays backward compatible with every existing template while
+        letting new/updated ones opt in to gendered wording via:
+          {author_pronoun} / {author_pronoun_obj} / {author_possessive}
+          {target_pronoun} / {target_pronoun_obj} / {target_possessive}
+        """
         template = random.choice(self.response_templates)
-        return template.format(author=author, target=target or author)
+        author_p = PRONOUNS.get(author_gender or "neutral", PRONOUNS["neutral"])
+        target_p = PRONOUNS.get(target_gender or "neutral", PRONOUNS["neutral"])
+        return template.format(
+            author=author,
+            target=target or author,
+            author_pronoun=author_p["subject"],
+            author_pronoun_obj=author_p["object"],
+            author_possessive=author_p["possessive"],
+            target_pronoun=target_p["subject"],
+            target_pronoun_obj=target_p["object"],
+            target_possessive=target_p["possessive"],
+        )
 
 
 _registry: dict[str, ActionConfig] = {}
@@ -53,6 +94,7 @@ register(ActionConfig(
         "**{author}** ran over and gave **{target}** the biggest hug ever! 🫂",
         "**{author}** hugged **{target}** so tightly they almost couldn't breathe!",
         "**{author}** snuck up behind **{target}** and gave them a surprise hug! 💖",
+        "**{author}** pulled **{target}** close, resting {author_possessive} head on {target_possessive} shoulder! 🤗",
     ],
 ))
 
@@ -292,6 +334,7 @@ register(ActionConfig(
         "**{author}** started sobbing uncontrollably! 💧",
         "**{author}** is shedding a single dramatic tear... 😤",
         "**{author}** is having a full ugly cry right now! 😭",
+        "**{author}** buried {author_possessive} face in {author_pronoun_obj}self and cried! 😢",
     ],
 ))
 
@@ -320,6 +363,7 @@ register(ActionConfig(
         "**{author}**'s cheeks go completely red! 🔴",
         "**{author}** starts blushing furiously! 😖",
         "**{author}** hides their face, blushing hard! 🙈",
+        "**{author}** blushed so hard {author_pronoun} had to look away! 😳",
     ],
 ))
 
@@ -334,6 +378,7 @@ register(ActionConfig(
         "**{author}** beams a giant smile at **{target}**! ✨",
         "**{author}** flashes **{target}** a gentle smile! 💕",
         "**{author}** can't stop smiling at **{target}**! 😄",
+        "**{author}** smiled so warmly {author_pronoun} lit up the whole room! ✨",
     ],
 ))
 
@@ -348,6 +393,7 @@ register(ActionConfig(
         "**{author}** winks knowingly at **{target}**! ✨",
         "**{author}** flashes **{target}** a wink! 💫",
         "**{author}** winks playfully at **{target}**! 😄",
+        "**{author}** shot **{target}** a wink over {author_possessive} shoulder! 😉",
     ],
 ))
 

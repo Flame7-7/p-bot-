@@ -172,6 +172,51 @@ class UserSettings(Base):
     user: Mapped["User"] = relationship(back_populates="settings")
 
 
+class RoleplayProfile(Base):
+    """Persisted replacement for the old in-memory `user_profiles = {}` in
+    verification.py. Not a FK to `users.id` (same pattern as
+    Interaction.target_id / GuildSettings.guild_id below) so that setting
+    a role/consent works even before a user has run any roleplay command
+    that would create their `users` row via UserRepository.get_or_create.
+    """
+    __tablename__ = "roleplay_profiles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, unique=True)
+    gender: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
+    consent_given: Mapped[bool] = mapped_column(Boolean, default=False)
+    consented_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (Index("ix_roleplay_profiles_user", "user_id"),)
+
+
+class CustomCommand(Base):
+    """Guild-scoped, database-backed user/admin-created slash command."""
+
+    __tablename__ = "custom_commands"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    guild_id: Mapped[int] = mapped_column(Integer)
+    name: Mapped[str] = mapped_column(String(32))
+    response: Mapped[str] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(String(100), default="Custom server command")
+    category: Mapped[str] = mapped_column(String(50), default="custom")
+    creator_id: Mapped[int] = mapped_column(Integer)
+    cooldown_seconds: Mapped[int] = mapped_column(Integer, default=0)
+    requires_target: Mapped[bool] = mapped_column(Boolean, default=False)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now()
+    )
+
+    __table_args__ = (
+        UniqueConstraint("guild_id", "name", name="uq_custom_commands_guild_name"),
+        Index("ix_custom_commands_guild", "guild_id"),
+    )
+
+
 class GuildSettings(Base):
     __tablename__ = "guild_settings"
 

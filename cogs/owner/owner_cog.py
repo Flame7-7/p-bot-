@@ -49,7 +49,23 @@ class OwnerCog(commands.Cog, name="Owner"):
     @commands.is_owner()
     async def sync(self, ctx: commands.Context) -> None:
         synced = await self.bot.tree.sync()
-        await ctx.send(f"✅ Synced **{len(synced)}** slash commands globally.")
+        guild_counts: list[str] = []
+        for guild in self.bot.guilds:
+            try:
+                guild_synced = await self.bot.tree.sync(guild=discord.Object(id=guild.id))
+                guild_counts.append(f"{guild.name}: {len(guild_synced)}")
+            except Exception as exc:
+                logger.error("guild sync failed for %s: %s", guild.id, exc)
+                guild_counts.append(f"{guild.name}: failed")
+
+        summary = ", ".join(guild_counts[:10])
+        if len(guild_counts) > 10:
+            summary += f" (+{len(guild_counts) - 10} more)"
+        await ctx.send(
+            f"✅ Synced **{len(synced)}** global slash commands and "
+            f"**{len(guild_counts)}** guild command sets."
+            + (f"\\n{summary}" if summary else "")
+        )
 
     @commands.command(name="seed", hidden=True)
     @commands.is_owner()

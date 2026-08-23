@@ -16,6 +16,8 @@ setup_logging()
 logger = get_logger(__name__)
 
 COGS = [
+    "verification",
+    "cogs.custom_commands.custom_commands_cog",
     "cogs.roleplay.roleplay_cog",
     "cogs.profile.profile_cog",
     "cogs.relationships.relationships_cog",
