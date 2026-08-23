@@ -1,17 +1,42 @@
 from __future__ import annotations
 
-import io
-import aiohttp
-import discord
-from discord.ext import commands
+import re
 from typing import Optional
 
+import discord
+from discord import app_commands
+from discord.ext import commands
+
 from repositories.achievement_repository import AchievementRepository
+from services.action_registry import get_all_actions
 from services.gif_service import GifService
 from utils.cooldowns import cache_delete_prefix
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+# Accept gifs separated by spaces, commas, AND/OR new lines in one paste,
+# instead of one command invocation per link.
+_SPLIT_RE = re.compile(r"[,\s]+")
+_GIF_URL_RE = re.compile(r"^https?://\S+\.gif(\?\S*)?$", re.IGNORECASE)
+
+
+async def _category_autocomplete(
+    interaction: discord.Interaction, current: str
+) -> list[app_commands.Choice[str]]:
+    # There are 62 gif categories -- too many for a static Choice list
+    # (Discord caps those at 25), so this uses autocomplete instead,
+    # which supports searching a much longer list.
+    categories = sorted({a.gif_category for a in get_all_actions().values()})
+    current = current.lower()
+    matches = [c for c in categories if current in c.lower()]
+    return [app_commands.Choice(name=c, value=c) for c in matches[:25]]
+
+
+def is_owner():
+    async def predicate(interaction: discord.Interaction) -> bool:
+        return await interaction.client.is_owner(interaction.user)
+    return app_commands.check(predicate)
 
 
 class OwnerCog(commands.Cog, name="Owner"):
@@ -37,6 +62,96 @@ class OwnerCog(commands.Cog, name="Owner"):
     async def addgif(self, ctx: commands.Context, category: str, *, url: str) -> None:
         gif = await self.gif_service.add_gif(category, url)
         await ctx.send(f"✅ Added GIF `#{gif.id}` to `{category}`.")
+
+    # ---------------- /gif add: bulk-add without attachments or a text file ----------------
+
+    gif_group = app_commands.Group(
+        name="gif", description="Manage the gif library used by roleplay commands"
+    )
+
+    @gif_group.command(name="add", description="Add one or more gifs to a category in a single command")
+    @app_commands.describe(
+        category="Which roleplay action this gif shows up for (start typing to search)",
+        urls="One or more direct .gif URLs — separate with spaces, commas, or new lines",
+    )
+    @app_commands.autocomplete(category=_category_autocomplete)
+    @is_owner()
+    async def gif_add(self, interaction: discord.Interaction, category: str, urls: str) -> None:
+        valid_categories = {a.gif_category for a in get_all_actions().values()}
+        if category not in valid_categories:
+            await interaction.response.send_message(
+                f"❌ `{category}` isn't a known category. Start typing in the `category` "
+                f"field to pick from the list.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.defer(ephemeral=True)
+
+        candidates = [u for u in _SPLIT_RE.split(urls.strip()) if u]
+        added, duplicates, invalid = [], [], []
+
+        for url in candidates:
+            if not _GIF_URL_RE.match(url):
+                invalid.append(url)
+                continue
+            if await self.gif_service.gif_exists(category, url):
+                duplicates.append(url)
+                continue
+            try:
+                await self.gif_service.add_gif(category, url)
+                added.append(url)
+            except Exception as e:
+                logger.error("failed to add gif %s: %s", url, e)
+                invalid.append(url)
+
+        lines = [f"✅ Added **{len(added)}** gif(s) to `{category}`."]
+        if duplicates:
+            lines.append(f"↩️ Skipped {len(duplicates)} already in the library.")
+        if invalid:
+            lines.append(f"⚠️ Skipped {len(invalid)} invalid link(s) — must be a direct `.gif` URL.")
+
+        embed = discord.Embed(
+            title="Gif library updated",
+            description="\n".join(lines),
+            color=0x2ECC71,
+        )
+        if invalid:
+            embed.add_field(name="Invalid links", value="\n".join(invalid[:10]), inline=False)
+        await interaction.followup.send(embed=embed, ephemeral=True)
+
+    @gif_group.command(name="list", description="See how many gifs a category has")
+    @app_commands.autocomplete(category=_category_autocomplete)
+    @is_owner()
+    async def gif_list(self, interaction: discord.Interaction, category: str) -> None:
+        from database.connection import get_session
+        from models.models import GIF
+        from sqlalchemy import select
+
+        async with get_session() as session:
+            result = await session.execute(select(GIF.url).where(GIF.category == category))
+            urls = [r[0] for r in result.all()]
+
+        if not urls:
+            await interaction.response.send_message(f"No gifs for `{category}` yet.", ephemeral=True)
+            return
+
+        embed = discord.Embed(
+            title=f"Gifs for `{category}` ({len(urls)})",
+            description="\n".join(urls[:20]),
+            color=0x2ECC71,
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    async def cog_app_command_error(
+        self, interaction: discord.Interaction, error: app_commands.AppCommandError
+    ) -> None:
+        if isinstance(error, app_commands.CheckFailure):
+            await interaction.response.send_message("Owner-only command.", ephemeral=True)
+        else:
+            raise error
+
+    # ---------------- existing bulk-add paths (attachments / text file) ----------------
 
     @commands.command(name="addgifs", hidden=True)
     @commands.is_owner()
@@ -65,7 +180,7 @@ class OwnerCog(commands.Cog, name="Owner"):
                     logger.warning(f"Skipping {attachment.filename}: invalid file type")
                     failed += 1
                     continue
-                    
+
                 gif = await self.gif_service.add_gif(
                     category, attachment.url, name=f"{name_prefix}_{i}"
                 )

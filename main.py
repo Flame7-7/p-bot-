@@ -92,6 +92,8 @@ class RoleplayBot(commands.Bot):
             pass
 
     async def close(self) -> None:
+        from services.gif_service import close_http_session
+        await close_http_session()
         await close_db()
         await super().close()
 

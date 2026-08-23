@@ -12,6 +12,28 @@ from sqlalchemy import select
 
 logger = get_logger(__name__)
 
+# One shared session reused for every Tenor request for the life of the
+# process, instead of `async with aiohttp.ClientSession()` per call. The
+# old version wasn't technically leaking (the `async with` did close each
+# one), but spinning up a brand new TCP/TLS session for every single
+# fallback lookup is wasteful, especially on a low-RAM free host. Closed
+# once in main.py's close() via close_http_session().
+_http_session: aiohttp.ClientSession | None = None
+
+
+def get_http_session() -> aiohttp.ClientSession:
+    global _http_session
+    if _http_session is None or _http_session.closed:
+        _http_session = aiohttp.ClientSession()
+    return _http_session
+
+
+async def close_http_session() -> None:
+    global _http_session
+    if _http_session and not _http_session.closed:
+        await _http_session.close()
+    _http_session = None
+
 
 class GifService:
     def __init__(self) -> None:
@@ -55,20 +77,30 @@ class GifService:
                 "limit": 10,
                 "media_filter": "gif",
             }
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    "https://tenor.googleapis.com/v2/search",
-                    params=params,
-                    timeout=aiohttp.ClientTimeout(total=5),
-                ) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        results = data.get("results", [])
-                        if results:
-                            return random.choice(results)["media_formats"]["gif"]["url"]
+            session = get_http_session()
+            async with session.get(
+                "https://tenor.googleapis.com/v2/search",
+                params=params,
+                timeout=aiohttp.ClientTimeout(total=5),
+            ) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    results = data.get("results", [])
+                    if results:
+                        return random.choice(results)["media_formats"]["gif"]["url"]
         except Exception as e:
             logger.warning("tenor fetch failed for %s: %s", category, e)
         return None
+
+    async def gif_exists(self, category: str, url: str) -> bool:
+        """Used by bulk-add so pasting the same link twice (or re-pasting
+        a batch that partly succeeded) doesn't pile up duplicate rows --
+        the `gifs` table has no unique constraint at the DB level."""
+        async with get_session() as session:
+            result = await session.execute(
+                select(GIF.id).where(GIF.category == category, GIF.url == url)
+            )
+            return result.scalar_one_or_none() is not None
 
     async def add_gif(
         self, category: str, url: str, name: str | None = None, weight: float = 1.0
