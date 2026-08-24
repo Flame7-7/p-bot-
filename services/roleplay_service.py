@@ -46,7 +46,6 @@ class RoleplayService:
         author: discord.Member,
         target: discord.Member | None,
         guild_id: int,
-        channel: discord.abc.GuildChannel | discord.Thread | None = None,
     ) -> ActionResult | str:
         action = get_action(action_name)
         if not action:
@@ -59,20 +58,6 @@ class RoleplayService:
             return "You can't use this action on yourself!"
         if target and target.bot:
             return "You can't use this action on a bot!"
-
-        # Sensitive actions have stricter execution requirements. These checks
-        # live in the shared service so every intimate command gets identical
-        # behaviour, regardless of which slash-command wrapper invokes it.
-        if action.requires_nsfw_channel:
-            if channel is None or not getattr(channel, "is_nsfw", lambda: False)():
-                return "🔞 This action can only be used in an NSFW channel."
-
-        if action.requires_consent:
-            author_verified = await self.roleplay_profile_repo.is_verified(author.id)
-            if not author_verified:
-                return "🔒 You must complete `/consent` before using this action."
-            if target and not await self.roleplay_profile_repo.is_verified(target.id):
-                return f"🔒 **{target.display_name}** must complete `/consent` before you can use this action with them."
 
         # Check cooldown (in-memory)
         remaining = check_cooldown(author.id, action_name)

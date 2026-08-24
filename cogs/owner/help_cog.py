@@ -71,27 +71,6 @@ class HelpCog(commands.Cog, name="Help"):
                 )
             pages.append(page_content)
 
-        # Intimate actions intentionally have an overview rather than a command-by-command
-        # directory. The actual registered commands remain untouched, but their execution is
-        # protected by the shared RoleplayService gates.
-        if get_by_category("intimate"):
-            pages.append(
-                "# 🔞 Intimate Roleplay\n\n"
-                "Intimate roleplay actions use the same roleplay system as the other categories, "
-                "with additional safeguards.\n\n"
-                "## Requirements\n"
-                "- 🔒 **Both participants must complete `/consent`.**\n"
-                "- 🔞 **The action must be used in an NSFW Discord channel.**\n"
-                "- 🛑 A user who has disabled interactions cannot be targeted.\n\n"
-                "## Privacy & consent\n"
-                "Consent is stored per user in the existing SQLite database. It is never inferred "
-                "from a channel setting, and another user's consent cannot be changed by someone "
-                "else.\n\n"
-                "The individual intimate commands remain available through Discord's slash-command "
-                "interface for eligible users; this help page deliberately avoids reproducing the "
-                "explicit action catalogue."
-            )
-
         # ── Page: Sync Commands ─────────────────────────────────────────
         pages.append(
             "# 🔁 Sync Commands\n\n"

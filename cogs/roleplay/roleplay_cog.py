@@ -25,7 +25,6 @@ async def _run(
         author=interaction.user,  # type: ignore[arg-type]
         target=target,
         guild_id=interaction.guild_id or 0,
-        channel=interaction.channel,
     )
     if isinstance(result, str):
         await interaction.followup.send(result)
