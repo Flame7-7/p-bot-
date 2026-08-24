@@ -29,6 +29,11 @@ class ActionConfig:
     self_targetable: bool = False
     requires_target: bool = True
     description: str = ""
+    # Sensitive categories can opt into additional execution gates without
+    # duplicating checks in every command handler. Existing action templates
+    # remain unchanged.
+    requires_consent: bool = False
+    requires_nsfw_channel: bool = False
 
     def get_response(
         self,
@@ -98,6 +103,14 @@ def get_all_actions() -> dict[str, ActionConfig]:
 
 def get_by_category(category: str) -> list[ActionConfig]:
     return [a for a in _registry.values() if a.category == category]
+
+
+def get_categories() -> dict[str, list[ActionConfig]]:
+    """Return registered actions grouped by category in registration order."""
+    categories: dict[str, list[ActionConfig]] = {}
+    for action in _registry.values():
+        categories.setdefault(action.category, []).append(action)
+    return categories
 
 
 # ── Affection (10) ────────────────────────────────────────────────────────────
@@ -932,3 +945,11 @@ register(ActionConfig(
         "**{author}** squirted uncontrollably — **{target}** looked very proud of themselves! 😏",
     ],
 ))
+
+
+# Intimate actions use the same shared registry/service as every other roleplay
+# action, but are subject to stricter execution gates. This keeps the existing
+# action definitions and response content intact while centralising the policy.
+for _intimate_action in get_by_category("intimate"):
+    _intimate_action.requires_consent = True
+    _intimate_action.requires_nsfw_channel = True

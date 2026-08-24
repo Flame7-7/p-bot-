@@ -12,6 +12,7 @@ class Config:
     token: str = os.environ["DISCORD_TOKEN"]
     client_id: int = int(os.environ["DISCORD_CLIENT_ID"])
     tenor_api_key: str | None = os.getenv("TENOR_API_KEY") or None
+    tmdb_api_key: str | None = os.getenv("TMDB_API_KEY") or None
 
     # Database
     db_path: str = os.getenv("DB_PATH", "bot.db")

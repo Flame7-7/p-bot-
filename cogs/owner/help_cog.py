@@ -44,7 +44,8 @@ class HelpCog(commands.Cog, name="Help"):
             "• 🤝 **Social** -- greet and interact\n\n"
             "## Other Features\n"
             "• 👤 Profile & Stats · 💑 Relationships · 🏆 Achievements\n"
-            "• 📊 Leaderboards · 🎁 Economy · ⚙️ Settings\n\n"
+            "• 📊 Leaderboards · 🎁 Economy · ⚙️ Settings\n"
+            "• 🔥 No-Fap Tracker · 🎬 Movie Recommendations\n\n"
             "### ⚡ Quick Start\n"
             "`/consent` → `/hug @user` · `/profile` · `/propose @user` · `/top`"
         )
@@ -69,6 +70,27 @@ class HelpCog(commands.Cog, name="Help"):
                     f"• ⏱️ cooldown: `{action.cooldown_seconds}s`\n\n"
                 )
             pages.append(page_content)
+
+        # Intimate actions intentionally have an overview rather than a command-by-command
+        # directory. The actual registered commands remain untouched, but their execution is
+        # protected by the shared RoleplayService gates.
+        if get_by_category("intimate"):
+            pages.append(
+                "# 🔞 Intimate Roleplay\n\n"
+                "Intimate roleplay actions use the same roleplay system as the other categories, "
+                "with additional safeguards.\n\n"
+                "## Requirements\n"
+                "- 🔒 **Both participants must complete `/consent`.**\n"
+                "- 🔞 **The action must be used in an NSFW Discord channel.**\n"
+                "- 🛑 A user who has disabled interactions cannot be targeted.\n\n"
+                "## Privacy & consent\n"
+                "Consent is stored per user in the existing SQLite database. It is never inferred "
+                "from a channel setting, and another user's consent cannot be changed by someone "
+                "else.\n\n"
+                "The individual intimate commands remain available through Discord's slash-command "
+                "interface for eligible users; this help page deliberately avoids reproducing the "
+                "explicit action catalogue."
+            )
 
         # ── Page: Sync Commands ─────────────────────────────────────────
         pages.append(
@@ -186,7 +208,40 @@ class HelpCog(commands.Cog, name="Help"):
             "## 🎁 Economy\n"
             "`/daily`\n\n"
             "## ⚙️ Settings\n"
-            "`/settings`"
+            "`/settings`\n\n"
+            "## 🎮 Games\n"
+            "`/rps` `/rps_pvp` `/coinflip` `/slots` `/trivia` `/roll` `/guess`"
+        )
+
+        # ── Page: No-Fap Tracker ─────────────────────────────────────────
+        pages.append(
+            "# 🔥 No-Fap Tracker\n\n"
+            "A personal streak tracker, completely separate from the roleplay/consent "
+            "system -- just a self-improvement tool. Only you can see and manage your own "
+            "streak.\n\n"
+            "## `/nofap start`\n"
+            "Begin tracking your streak. Does nothing if you already have one running.\n\n"
+            "## `/nofap status`\n"
+            "See your current streak length, start date, and last reset.\n\n"
+            "## `/nofap stats`\n"
+            "See your best-ever streak, total resets, and how long you've been tracking.\n\n"
+            "## `/nofap reset`\n"
+            "Record a relapse. Asks for confirmation first, then banks your finished streak "
+            "as a new best (if it is one) and starts a fresh streak from now.\n\n"
+            "Your streak survives bot restarts -- it's stored in the same SQLite database as "
+            "everything else."
+        )
+
+        # ── Page: Movie Recommendations ────────────────────────────────────
+        pages.append(
+            "# 🎬 Movie Recommendations\n\n"
+            "## `/movie recommend [genre]`\n"
+            "Get a random, reasonably popular movie recommendation, pulled live from TMDB. "
+            "Leave `genre` blank for any genre, or pick one from the list (Action, Comedy, "
+            "Horror, Romance, Sci-Fi, and more).\n\n"
+            "Shows the title, year, a short synopsis, poster, and rating.\n\n"
+            "*(Requires the bot owner to have configured a free TMDB API key -- if you see a "
+            "setup message instead of a movie, that hasn't been done yet.)*"
         )
 
         # ── Page: Admin / Moderator Commands ──────────────────────────────

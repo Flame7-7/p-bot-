@@ -224,3 +224,22 @@ class GuildSettings(Base):
     guild_id: Mapped[int] = mapped_column(Integer, unique=True)
     roleplay_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     xp_multiplier: Mapped[float] = mapped_column(Float, default=1.0)
+
+
+class NoFapStreak(Base):
+    """Personal habit-tracking streak, entirely separate from the
+    roleplay/consent system. Same `user_id`-keyed, no-FK pattern as
+    RoleplayProfile so a user can `/nofap start` without needing a
+    `users` row first.
+    """
+    __tablename__ = "nofap_streaks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, unique=True)
+    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    last_reset_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    reset_count: Mapped[int] = mapped_column(Integer, default=0)
+    best_streak_days: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    __table_args__ = (Index("ix_nofap_streaks_user", "user_id"),)

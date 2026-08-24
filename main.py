@@ -24,6 +24,8 @@ COGS = [
     "cogs.achievements.achievements_cog",
     "cogs.economy.economy_cog",
     "cogs.games.games_cog",
+    "cogs.movies.movies_cog",
+    "cogs.nofap.nofap_cog",
     "cogs.settings.settings_cog",
     "cogs.moderation.moderation_cog",
     "cogs.owner.owner_cog",
