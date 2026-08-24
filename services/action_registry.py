@@ -36,24 +36,42 @@ class ActionConfig:
         target: str | None = None,
         author_gender: str | None = None,
         target_gender: str | None = None,
+        author_mention: str | None = None,
+        target_mention: str | None = None,
     ) -> str:
         """Renders a random response template.
 
         `author_gender`/`target_gender` are optional role selections from
-        /consent (one of PRONOUNS' keys). Templates that don't reference
-        the pronoun placeholders below are completely unaffected --
-        str.format() ignores keyword arguments a template doesn't use, so
-        this stays backward compatible with every existing template while
-        letting new/updated ones opt in to gendered wording via:
-          {author_pronoun} / {author_pronoun_obj} / {author_possessive}
-          {target_pronoun} / {target_pronoun_obj} / {target_possessive}
+        /consent (one of PRONOUNS' keys).
+
+        `author_mention`/`target_mention` should contain Discord mention
+        strings such as ``<@123456789>``. When supplied, the existing
+        `{author}` and `{target}` placeholders render those mentions instead
+        of plain display names, so Discord will notify the tagged users.
+
+        This keeps all existing response templates unchanged and remains
+        backward compatible: if mention values are not supplied, the
+        original display-name behavior is used.
         """
         template = random.choice(self.response_templates)
-        author_p = PRONOUNS.get(author_gender or "neutral", PRONOUNS["neutral"])
-        target_p = PRONOUNS.get(target_gender or "neutral", PRONOUNS["neutral"])
+
+        author_p = PRONOUNS.get(
+            author_gender or "neutral",
+            PRONOUNS["neutral"],
+        )
+        target_p = PRONOUNS.get(
+            target_gender or "neutral",
+            PRONOUNS["neutral"],
+        )
+
+        # Use real Discord mentions when the caller provides them.
+        # Example: <@123456789> instead of "Ayush".
+        rendered_author = author_mention or author
+        rendered_target = target_mention or target or author_mention or author
+
         return template.format(
-            author=author,
-            target=target or author,
+            author=rendered_author,
+            target=rendered_target,
             author_pronoun=author_p["subject"],
             author_pronoun_obj=author_p["object"],
             author_possessive=author_p["possessive"],
