@@ -31,57 +31,84 @@ class HelpCog(commands.Cog, name="Help"):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    def _get_all_commands(self) -> dict[str, list[tuple[str, str]]]:
+        """Gather all slash commands from the bot and organize by category."""
+        categories: dict[str, list[tuple[str, str]]] = {
+            "Roleplay": [],
+            "Games": [],
+            "Profile & Stats": [],
+            "Relationships": [],
+            "Achievements": [],
+            "Economy": [],
+            "Settings": [],
+            "Custom Commands": [],
+            "Admin/Owner": [],
+        }
+
+        for cmd in self.bot.walk_app_commands():
+            if isinstance(cmd, app_commands.Command):
+                name = cmd.name
+                desc = cmd.description or "No description"
+                
+                # Categorize commands
+                if name in ["hug", "pat", "kiss", "cuddle", "poke", "boop", "headpat", "nuzzle", "snuggle", "tackle", 
+                           "slap", "punch", "kick", "bite", "lick", "tickle", "pounce", "throw", "cry", "wave", "blush",
+                           "smile", "wink", "dance", "laugh", "sigh", "highfive", "fistbump", "handshake", "bow", 
+                           "stare", "glare", "fuck", "blowjob", "creampie", "moan", "strip", "spank", "grope", 
+                           "fingerfuck", "tease", "seduce", "makeout", "ride", "cum", "undress", "lickout", "handjob",
+                           "titfuck", "anal", "bondage", "dominate", "submit", "choke", "edging", "gangbang", 
+                           "threesome", "facesit", "cum_facial", "roleplay_sex", "orgasm", "squirt"]:
+                    categories["Roleplay"].append((name, desc))
+                elif name in ["rps", "coinflip", "slots", "trivia", "roll", "guess", "rps_pvp"]:
+                    categories["Games"].append((name, desc))
+                elif name in ["profile", "setbio", "stats"]:
+                    categories["Profile & Stats"].append((name, desc))
+                elif name in ["propose", "partner", "breakup", "anniversary"]:
+                    categories["Relationships"].append((name, desc))
+                elif name == "achievements":
+                    categories["Achievements"].append((name, desc))
+                elif name == "daily":
+                    categories["Economy"].append((name, desc))
+                elif name == "settings":
+                    categories["Settings"].append((name, desc))
+                elif name in ["addcommand", "editcommand", "removecommand", "customcommands"]:
+                    categories["Custom Commands"].append((name, desc))
+                elif name in ["botban", "botunban", "resetuser", "sync", "seed", "addgif", "addgifs", 
+                             "addgifsfromlist", "clearcache", "botstats", "gif"]:
+                    categories["Admin/Owner"].append((name, desc))
+                elif name == "help":
+                    pass  # Skip help itself
+                else:
+                    # Put uncategorized in a general bucket
+                    if "Other" not in categories:
+                        categories["Other"] = []
+                    categories["Other"].append((name, desc))
+
+        return categories
+
     @app_commands.command(name="help", description="View all bot commands")
     async def help(self, interaction: discord.Interaction) -> None:
         pages: list[discord.Embed] = []
 
-        # ── Page 1: Getting Started ─────────────────────────────────────
+        # ── Page 1: All Commands Overview ─────────────────────────────────────
         overview = discord.Embed(
-            title="🌸 Roleplay Bot",
-            description=(
-                "A social roleplay bot with relationships, achievements, leveling, and "
-                "leaderboards!"
-            ),
+            title="🌸 Roleplay Bot - All Commands",
+            description="Here is a complete list of all commands available in this bot!",
             color=DISCORD_BLURPLE,
         )
-        overview.add_field(
-            name="🚀 Getting Started",
-            value=(
-                "`/help` -- this menu.\n"
-                "`/consent` -- set your role (Male / Female / Non-Binary) and confirm the "
-                "community guidelines. Optional for most roleplay commands, but unlocks "
-                "gendered wording (`he`/`she`/`they`) and is required by anything using the "
-                "`requires_verification()` check.\n"
-                "`/verify` -- alias for `/consent`.\n"
-                "`/consentstatus` -- check your current role/consent without opening the setup flow."
-            ),
-            inline=False,
-        )
-        overview.add_field(
-            name="Browse by Category",
-            value=(
-                "💕 **Affection** -- show love and care\n"
-                "😄 **Playful** -- have fun together\n"
-                "💭 **Emotional** -- express yourself\n"
-                "🤝 **Social** -- greet and interact"
-            ),
-            inline=True,
-        )
-        overview.add_field(
-            name="Other Features",
-            value=(
-                "👤 Profile & Stats · 💑 Relationships\n"
-                "🏆 Achievements · 📊 Leaderboards\n"
-                "🎁 Economy · ⚙️ Settings\n"
-                "🔥 No-Fap Tracker · 🎬 Movies"
-            ),
-            inline=True,
-        )
-        overview.add_field(
-            name="⚡ Quick Start",
-            value="`/consent` → `/hug @user` · `/profile` · `/propose @user` · `/top`",
-            inline=False,
-        )
+        
+        commands_by_category = self._get_all_commands()
+        
+        for category, cmds in commands_by_category.items():
+            if not cmds:
+                continue
+            cmd_list = "\n".join([f"`/{name}` - {desc[:50]}{'...' if len(desc) > 50 else ''}" for name, desc in sorted(cmds, key=lambda x: x[0])])
+            overview.add_field(
+                name=f"{category} ({len(cmds)})",
+                value=cmd_list if cmd_list else "No commands",
+                inline=False,
+            )
+        
         pages.append(_footer(overview))
 
         # ── Pages 2-5: Roleplay commands, one page per SFW category ────
