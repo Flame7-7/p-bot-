@@ -68,10 +68,13 @@ class ActionConfig:
         # Example: <@123456789> instead of "Ayush".
         rendered_author = author_mention or author
         rendered_target = target_mention or target or author_mention or author
+        # Alias used by target-first response templates.
+        rendered_target_mention = rendered_target
 
         return template.format(
             author=rendered_author,
             target=rendered_target,
+            target_mention=rendered_target_mention,
             author_pronoun=author_p["subject"],
             author_pronoun_obj=author_p["object"],
             author_possessive=author_p["possessive"],
@@ -107,12 +110,12 @@ register(ActionConfig(
     cooldown_seconds=30, gif_category="hug",
     description="Give someone a warm hug",
     response_templates=[
-        "**{author}** pulled **{target}** into a warm, tight hug! 🤗",
-        "**{author}** wrapped their arms around **{target}** and hugged them close! 💕",
-        "**{author}** ran over and gave **{target}** the biggest hug ever! 🫂",
-        "**{author}** hugged **{target}** so tightly they almost couldn't breathe!",
-        "**{author}** snuck up behind **{target}** and gave them a surprise hug! 💖",
-        "**{author}** pulled **{target}** close, resting {author_possessive} head on {target_possessive} shoulder! 🤗",
+        "{target_mention} — **{author}** pulled {target_mention} into a warm, tight hug! 🤗",
+        "{target_mention} — **{author}** wrapped their arms around {target_mention} and hugged them close! 💕",
+        "{target_mention} — **{author}** ran over and gave {target_mention} the biggest hug ever! 🫂",
+        "{target_mention} — **{author}** hugged {target_mention} so tightly they almost couldn't breathe!",
+        "{target_mention} — **{author}** snuck up behind {target_mention} and gave them a surprise hug! 💖",
+        "{target_mention} — **{author}** pulled {target_mention} close, resting {author_possessive} head on {target_possessive} shoulder! 🤗",
     ],
 ))
 
@@ -121,11 +124,11 @@ register(ActionConfig(
     cooldown_seconds=30, gif_category="pat",
     description="Pat someone on the head",
     response_templates=[
-        "**{author}** gently patted **{target}**'s head! 🥺",
-        "**{author}** gave **{target}** a soft, loving headpat! ✨",
-        "**{author}** reached up and patted **{target}** with care! 💕",
-        "**{author}** tenderly patted **{target}**'s head! 🌸",
-        "**{author}** ruffled **{target}**'s hair with an affectionate pat! 😊",
+        "{target_mention} — **{author}** gently patted {target_mention}'s head! 🥺",
+        "{target_mention} — **{author}** gave {target_mention} a soft, loving headpat! ✨",
+        "{target_mention} — **{author}** reached up and patted {target_mention} with care! 💕",
+        "{target_mention} — **{author}** tenderly patted {target_mention}'s head! 🌸",
+        "{target_mention} — **{author}** ruffled {target_mention}'s hair with an affectionate pat! 😊",
     ],
 ))
 
@@ -134,11 +137,11 @@ register(ActionConfig(
     cooldown_seconds=30, gif_category="kiss",
     description="Kiss someone",
     response_templates=[
-        "**{author}** gave **{target}** a sweet kiss! 💋",
-        "**{author}** leaned in and kissed **{target}** on the cheek! 😘",
-        "**{author}** planted a gentle kiss on **{target}**'s forehead! 💕",
-        "**{author}** snuck a quick kiss on **{target}**'s cheek! 🌸",
-        "**{author}** gave **{target}** a loving kiss! 💖",
+        "{target_mention} — **{author}** gave {target_mention} a sweet kiss! 💋",
+        "{target_mention} — **{author}** leaned in and kissed {target_mention} on the cheek! 😘",
+        "{target_mention} — **{author}** planted a gentle kiss on {target_mention}'s forehead! 💕",
+        "{target_mention} — **{author}** snuck a quick kiss on {target_mention}'s cheek! 🌸",
+        "{target_mention} — **{author}** gave {target_mention} a loving kiss! 💖",
     ],
 ))
 
@@ -147,11 +150,11 @@ register(ActionConfig(
     cooldown_seconds=30, gif_category="cuddle",
     description="Cuddle with someone",
     response_templates=[
-        "**{author}** curled up and cuddled with **{target}**! 🫂",
-        "**{author}** snuggled close to **{target}** for a cozy cuddle! 💕",
-        "**{author}** and **{target}** cuddled together warmly! 🌸",
-        "**{author}** pulled **{target}** in for a long, comfortable cuddle! 💖",
-        "**{author}** wrapped themselves around **{target}** in a cuddle! 🥺",
+        "{target_mention} — **{author}** curled up and cuddled with {target_mention}! 🫂",
+        "{target_mention} — **{author}** snuggled close to {target_mention} for a cozy cuddle! 💕",
+        "**{target_mention}** and **{author}** cuddled together warmly! 🌸",
+        "{target_mention} — **{author}** pulled {target_mention} in for a long, comfortable cuddle! 💖",
+        "{target_mention} — **{author}** wrapped themselves around {target_mention} in a cuddle! 🥺",
     ],
 ))
 
@@ -160,11 +163,11 @@ register(ActionConfig(
     cooldown_seconds=30, gif_category="poke",
     description="Poke someone",
     response_templates=[
-        "**{author}** poked **{target}** on the cheek! 👉",
-        "**{author}** jabbed **{target}** playfully! 😄",
-        "**{author}** kept poking **{target}** until they noticed! 👀",
-        "**{author}** sneakily poked **{target}** and ran! 💨",
-        "**{author}** gave **{target}** a little boop-poke! 🥺",
+        "{target_mention} — **{author}** poked {target_mention} on the cheek! 👉",
+        "{target_mention} — **{author}** jabbed {target_mention} playfully! 😄",
+        "{target_mention} — **{author}** kept poking {target_mention} until they noticed! 👀",
+        "{target_mention} — **{author}** sneakily poked {target_mention} and ran! 💨",
+        "{target_mention} — **{author}** gave {target_mention} a little boop-poke! 🥺",
     ],
 ))
 
@@ -173,11 +176,11 @@ register(ActionConfig(
     cooldown_seconds=30, gif_category="boop",
     description="Boop someone on the nose",
     response_templates=[
-        "**{author}** booped **{target}** on the nose! 👆",
-        "**{author}** reached over and booped **{target}**'s snoot! 🐾",
-        "**{author}** gave **{target}** the gentlest nose boop! 💕",
-        "**{author}** *boop* — got **{target}**'s nose! 😄",
-        "**{author}** sneaked in a surprise boop on **{target}**! ✨",
+        "{target_mention} — **{author}** booped {target_mention} on the nose! 👆",
+        "{target_mention} — **{author}** reached over and booped {target_mention}'s snoot! 🐾",
+        "{target_mention} — **{author}** gave {target_mention} the gentlest nose boop! 💕",
+        "{target_mention} — **{author}** *boop* — got {target_mention}'s nose! 😄",
+        "{target_mention} — **{author}** sneaked in a surprise boop on {target_mention}! ✨",
     ],
 ))
 
@@ -186,11 +189,11 @@ register(ActionConfig(
     cooldown_seconds=30, gif_category="headpat",
     description="Give someone a headpat",
     response_templates=[
-        "**{author}** gave **{target}** soft, gentle headpats! 🥺",
-        "**{author}** placed a warm hand on **{target}**'s head! 💕",
-        "**{author}** headpatted **{target}** like they deserved it! ✨",
-        "**{author}** ruffled **{target}**'s hair with tender headpats! 🌸",
-        "**{author}** patted **{target}**'s head and smiled warmly! 😊",
+        "{target_mention} — **{author}** gave {target_mention} soft, gentle headpats! 🥺",
+        "{target_mention} — **{author}** placed a warm hand on {target_mention}'s head! 💕",
+        "{target_mention} — **{author}** headpatted {target_mention} like they deserved it! ✨",
+        "{target_mention} — **{author}** ruffled {target_mention}'s hair with tender headpats! 🌸",
+        "{target_mention} — **{author}** patted {target_mention}'s head and smiled warmly! 😊",
     ],
 ))
 
@@ -199,11 +202,11 @@ register(ActionConfig(
     cooldown_seconds=30, gif_category="nuzzle",
     description="Nuzzle someone affectionately",
     response_templates=[
-        "**{author}** nuzzled up against **{target}** softly! 🥰",
-        "**{author}** buried their face in **{target}**'s shoulder with a happy nuzzle! 💕",
-        "**{author}** nuzzled **{target}** gently! 🌸",
-        "**{author}** pressed their cheek to **{target}**'s in a sweet nuzzle! ✨",
-        "**{author}** nuzzled **{target}** and purred contentedly! 😸",
+        "{target_mention} — **{author}** nuzzled up against {target_mention} softly! 🥰",
+        "{target_mention} — **{author}** buried their face in {target_mention}'s shoulder with a happy nuzzle! 💕",
+        "{target_mention} — **{author}** nuzzled {target_mention} gently! 🌸",
+        "{target_mention} — **{author}** pressed their cheek to {target_mention}'s in a sweet nuzzle! ✨",
+        "{target_mention} — **{author}** nuzzled {target_mention} and purred contentedly! 😸",
     ],
 ))
 
@@ -212,11 +215,11 @@ register(ActionConfig(
     cooldown_seconds=30, gif_category="snuggle",
     description="Snuggle with someone",
     response_templates=[
-        "**{author}** snuggled close to **{target}** warmly! 🫂",
-        "**{author}** wrapped up with **{target}** in a cozy snuggle! 💕",
-        "**{author}** and **{target}** settled in for an adorable snuggle! 🌸",
-        "**{author}** snuggled into **{target}** like a sleepy puppy! 🐶",
-        "**{author}** pulled **{target}** into a snuggly embrace! 💖",
+        "{target_mention} — **{author}** snuggled close to {target_mention} warmly! 🫂",
+        "{target_mention} — **{author}** wrapped up with {target_mention} in a cozy snuggle! 💕",
+        "**{target_mention}** and **{author}** settled in for an adorable snuggle! 🌸",
+        "{target_mention} — **{author}** snuggled into {target_mention} like a sleepy puppy! 🐶",
+        "{target_mention} — **{author}** pulled {target_mention} into a snuggly embrace! 💖",
     ],
 ))
 
@@ -225,11 +228,11 @@ register(ActionConfig(
     cooldown_seconds=30, gif_category="tackle",
     description="Tackle someone in excitement",
     response_templates=[
-        "**{author}** tackled **{target}** to the ground in excitement! 💨",
-        "**{author}** sprinted over and tackle-hugged **{target}**! 🏃",
-        "**{author}** launched themselves at **{target}** in a flying tackle! 😄",
-        "**{author}** caught **{target}** off guard with a sudden tackle! 😂",
-        "**{author}** tackled **{target}** and refused to let go! 🫂",
+        "{target_mention} — **{author}** tackled {target_mention} to the ground in excitement! 💨",
+        "{target_mention} — **{author}** sprinted over and tackle-hugged {target_mention}! 🏃",
+        "{target_mention} — **{author}** launched themselves at {target_mention} in a flying tackle! 😄",
+        "{target_mention} — **{author}** caught {target_mention} off guard with a sudden tackle! 😂",
+        "{target_mention} — **{author}** tackled {target_mention} and refused to let go! 🫂",
     ],
 ))
 
@@ -240,11 +243,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="slap",
     description="Slap someone playfully",
     response_templates=[
-        "**{author}** slapped **{target}** with a rubber fish! 🐟",
-        "**{author}** gave **{target}** a swift smack! 👋",
-        "**{author}** slapped **{target}** and ran off laughing! 😂",
-        "**{author}** delivered a dramatic slap to **{target}**! 🎭",
-        "**{author}** slapped **{target}** out of nowhere! 😤",
+        "{target_mention} — **{author}** slapped {target_mention} with a rubber fish! 🐟",
+        "{target_mention} — **{author}** gave {target_mention} a swift smack! 👋",
+        "{target_mention} — **{author}** slapped {target_mention} and ran off laughing! 😂",
+        "{target_mention} — **{author}** delivered a dramatic slap to {target_mention}! 🎭",
+        "{target_mention} — **{author}** slapped {target_mention} out of nowhere! 😤",
     ],
 ))
 
@@ -253,11 +256,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="punch",
     description="Punch someone playfully",
     response_templates=[
-        "**{author}** punched **{target}** in the arm playfully! 👊",
-        "**{author}** threw a light punch at **{target}**! 🥊",
-        "**{author}** playfully decked **{target}**! 😤",
-        "**{author}** socked **{target}** in the shoulder! 💥",
-        "**{author}** gave **{target}** a friendly punch! 👊",
+        "{target_mention} — **{author}** punched {target_mention} in the arm playfully! 👊",
+        "{target_mention} — **{author}** threw a light punch at {target_mention}! 🥊",
+        "{target_mention} — **{author}** playfully decked {target_mention}! 😤",
+        "{target_mention} — **{author}** socked {target_mention} in the shoulder! 💥",
+        "{target_mention} — **{author}** gave {target_mention} a friendly punch! 👊",
     ],
 ))
 
@@ -266,11 +269,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="kick",
     description="Kick someone playfully",
     response_templates=[
-        "**{author}** kicked **{target}** playfully! 🦵",
-        "**{author}** launched a kick straight at **{target}**! 💥",
-        "**{author}** swept **{target}**'s leg! 🥋",
-        "**{author}** gave **{target}** a not-so-gentle kick! 😅",
-        "**{author}** kicked **{target}** and pretended it was an accident! 😂",
+        "{target_mention} — **{author}** kicked {target_mention} playfully! 🦵",
+        "{target_mention} — **{author}** launched a kick straight at {target_mention}! 💥",
+        "{target_mention} — **{author}** swept {target_mention}'s leg! 🥋",
+        "{target_mention} — **{author}** gave {target_mention} a not-so-gentle kick! 😅",
+        "{target_mention} — **{author}** kicked {target_mention} and pretended it was an accident! 😂",
     ],
 ))
 
@@ -279,11 +282,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="bite",
     description="Bite someone playfully",
     response_templates=[
-        "**{author}** nibbled on **{target}**'s ear! 👂",
-        "**{author}** chomped down on **{target}**'s arm! 😬",
-        "**{author}** gave **{target}** a playful little bite! 🐾",
-        "**{author}** bit **{target}** like a tiny gremlin! 😈",
-        "**{author}** sank their teeth into **{target}** — *nom nom*! 🍴",
+        "{target_mention} — **{author}** nibbled on {target_mention}'s ear! 👂",
+        "{target_mention} — **{author}** chomped down on {target_mention}'s arm! 😬",
+        "{target_mention} — **{author}** gave {target_mention} a playful little bite! 🐾",
+        "{target_mention} — **{author}** bit {target_mention} like a tiny gremlin! 😈",
+        "{target_mention} — **{author}** sank their teeth into {target_mention} — *nom nom*! 🍴",
     ],
 ))
 
@@ -292,11 +295,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="lick",
     description="Lick someone",
     response_templates=[
-        "**{author}** licked **{target}**'s cheek like a happy puppy! 🐶",
-        "**{author}** snuck a big lick on **{target}**'s face! 😝",
-        "**{author}** gave **{target}** a surprise lick! 👅",
-        "**{author}** licked **{target}** — because why not? 😂",
-        "**{author}** taste-tested **{target}** with a lick! 😋",
+        "{target_mention} — **{author}** licked {target_mention}'s cheek like a happy puppy! 🐶",
+        "{target_mention} — **{author}** snuck a big lick on {target_mention}'s face! 😝",
+        "{target_mention} — **{author}** gave {target_mention} a surprise lick! 👅",
+        "{target_mention} — **{author}** licked {target_mention} — because why not? 😂",
+        "{target_mention} — **{author}** taste-tested {target_mention} with a lick! 😋",
     ],
 ))
 
@@ -305,11 +308,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="tickle",
     description="Tickle someone",
     response_templates=[
-        "**{author}** started tickling **{target}** mercilessly! 😂",
-        "**{author}** found **{target}**'s tickle spot and attacked! 🎯",
-        "**{author}** wiggled their fingers at **{target}** then tickled! 😈",
-        "**{author}** tickled **{target}** until they couldn't breathe! 🤣",
-        "**{author}** ambushed **{target}** with relentless tickles! 👐",
+        "{target_mention} — **{author}** started tickling {target_mention} mercilessly! 😂",
+        "{target_mention} — **{author}** found {target_mention}'s tickle spot and attacked! 🎯",
+        "{target_mention} — **{author}** wiggled their fingers at {target_mention} then tickled! 😈",
+        "{target_mention} — **{author}** tickled {target_mention} until they couldn't breathe! 🤣",
+        "{target_mention} — **{author}** ambushed {target_mention} with relentless tickles! 👐",
     ],
 ))
 
@@ -318,11 +321,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="pounce",
     description="Pounce on someone",
     response_templates=[
-        "**{author}** pounced on **{target}** like a cat! 🐱",
-        "**{author}** launched themselves at **{target}** with a pounce! 💨",
-        "**{author}** crept silently... then pounced on **{target}**! 🐆",
-        "**{author}** did a flying pounce straight onto **{target}**! 🌪️",
-        "**{author}** pounced on **{target}** and pinned them down! 😄",
+        "{target_mention} — **{author}** pounced on {target_mention} like a cat! 🐱",
+        "{target_mention} — **{author}** launched themselves at {target_mention} with a pounce! 💨",
+        "{target_mention} — **{author}** crept silently... then pounced on {target_mention}! 🐆",
+        "{target_mention} — **{author}** did a flying pounce straight onto {target_mention}! 🌪️",
+        "{target_mention} — **{author}** pounced on {target_mention} and pinned them down! 😄",
     ],
 ))
 
@@ -331,11 +334,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="throw",
     description="Throw something at someone",
     response_templates=[
-        "**{author}** lobbed a pillow at **{target}**! 🛌",
-        "**{author}** threw a snowball at **{target}**! ❄️",
-        "**{author}** chucked a plushie at **{target}**'s face! 🧸",
-        "**{author}** hurled a bag of chips at **{target}**! 🍟",
-        "**{author}** yeeted a random object at **{target}**! 💥",
+        "{target_mention} — **{author}** lobbed a pillow at {target_mention}! 🛌",
+        "{target_mention} — **{author}** threw a snowball at {target_mention}! ❄️",
+        "{target_mention} — **{author}** chucked a plushie at {target_mention}'s face! 🧸",
+        "{target_mention} — **{author}** hurled a bag of chips at {target_mention}! 🍟",
+        "{target_mention} — **{author}** yeeted a random object at {target_mention}! 💥",
     ],
 ))
 
@@ -362,11 +365,11 @@ register(ActionConfig(
     self_targetable=True, requires_target=False,
     description="Wave at someone",
     response_templates=[
-        "**{author}** waves cheerfully at **{target}**! 👋",
-        "**{author}** waves hello at **{target}**! 😊",
-        "**{author}** gives **{target}** an enthusiastic wave! ✋",
-        "**{author}** waves excitedly at **{target}**! 🙌",
-        "**{author}** does a little wave at **{target}**! 🌟",
+        "{target_mention} — **{author}** waves cheerfully at {target_mention}! 👋",
+        "{target_mention} — **{author}** waves hello at {target_mention}! 😊",
+        "{target_mention} — **{author}** gives {target_mention} an enthusiastic wave! ✋",
+        "{target_mention} — **{author}** waves excitedly at {target_mention}! 🙌",
+        "{target_mention} — **{author}** does a little wave at {target_mention}! 🌟",
     ],
 ))
 
@@ -377,7 +380,7 @@ register(ActionConfig(
     description="Blush",
     response_templates=[
         "**{author}** turns bright red and covers their face! 😳",
-        "**{author}** blushes deeply at **{target}**! 💕",
+        "{target_mention} — **{author}** blushes deeply at {target_mention}! 💕",
         "**{author}**'s cheeks go completely red! 🔴",
         "**{author}** starts blushing furiously! 😖",
         "**{author}** hides their face, blushing hard! 🙈",
@@ -391,11 +394,11 @@ register(ActionConfig(
     self_targetable=True, requires_target=False,
     description="Smile warmly",
     response_templates=[
-        "**{author}** gives **{target}** the most beautiful smile! 😊",
-        "**{author}** smiles warmly at **{target}**! 🌸",
-        "**{author}** beams a giant smile at **{target}**! ✨",
-        "**{author}** flashes **{target}** a gentle smile! 💕",
-        "**{author}** can't stop smiling at **{target}**! 😄",
+        "{target_mention} — **{author}** gives {target_mention} the most beautiful smile! 😊",
+        "{target_mention} — **{author}** smiles warmly at {target_mention}! 🌸",
+        "{target_mention} — **{author}** beams a giant smile at {target_mention}! ✨",
+        "{target_mention} — **{author}** flashes {target_mention} a gentle smile! 💕",
+        "{target_mention} — **{author}** can't stop smiling at {target_mention}! 😄",
         "**{author}** smiled so warmly {author_pronoun} lit up the whole room! ✨",
     ],
 ))
@@ -406,12 +409,12 @@ register(ActionConfig(
     self_targetable=True, requires_target=False,
     description="Wink at someone",
     response_templates=[
-        "**{author}** winks smoothly at **{target}**! 😉",
-        "**{author}** gives **{target}** a cheeky wink! 😏",
-        "**{author}** winks knowingly at **{target}**! ✨",
-        "**{author}** flashes **{target}** a wink! 💫",
-        "**{author}** winks playfully at **{target}**! 😄",
-        "**{author}** shot **{target}** a wink over {author_possessive} shoulder! 😉",
+        "{target_mention} — **{author}** winks smoothly at {target_mention}! 😉",
+        "{target_mention} — **{author}** gives {target_mention} a cheeky wink! 😏",
+        "{target_mention} — **{author}** winks knowingly at {target_mention}! ✨",
+        "{target_mention} — **{author}** flashes {target_mention} a wink! 💫",
+        "{target_mention} — **{author}** winks playfully at {target_mention}! 😄",
+        "{target_mention} — **{author}** shot {target_mention} a wink over {author_possessive} shoulder! 😉",
     ],
 ))
 
@@ -423,7 +426,7 @@ register(ActionConfig(
     response_templates=[
         "**{author}** busts out some amazing dance moves! 💃",
         "**{author}** starts dancing like nobody's watching! 🕺",
-        "**{author}** pulls **{target}** onto the dance floor! 🎵",
+        "{target_mention} — **{author}** pulls {target_mention} onto the dance floor! 🎵",
         "**{author}** does a little happy dance! 🎉",
         "**{author}** moonwalks across the room! 🌕",
     ],
@@ -435,7 +438,7 @@ register(ActionConfig(
     self_targetable=True, requires_target=False,
     description="Laugh out loud",
     response_templates=[
-        "**{author}** bursts out laughing at **{target}**! 🤣",
+        "{target_mention} — **{author}** bursts out laughing at {target_mention}! 🤣",
         "**{author}** can't stop laughing! 😂",
         "**{author}** laughs so hard they cry! 😭😂",
         "**{author}** loses it completely! 🤣",
@@ -450,7 +453,7 @@ register(ActionConfig(
     description="Sigh expressively",
     response_templates=[
         "**{author}** lets out a long, dramatic sigh... 😮‍💨",
-        "**{author}** sighs deeply at **{target}**... 💨",
+        "{target_mention} — **{author}** sighs deeply at {target_mention}... 💨",
         "**{author}** exhales with the weight of the world... 😔",
         "**{author}** releases the most defeated sigh imaginable... 😪",
         "**{author}** sighs and shakes their head... 🤦",
@@ -464,11 +467,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="highfive",
     description="High-five someone",
     response_templates=[
-        "**{author}** slapped hands with **{target}** in a crisp high-five! 🙌",
-        "**{author}** and **{target}** shared a satisfying high-five! ✋",
-        "**{author}** gave **{target}** the most enthusiastic high-five! 🙌",
-        "**{author}** didn't leave **{target}** hanging — high five! ✋",
-        "**{author}** and **{target}** connected with a perfect high-five! 💥",
+        "{target_mention} — **{author}** slapped hands with {target_mention} in a crisp high-five! 🙌",
+        "**{target_mention}** and **{author}** shared a satisfying high-five! ✋",
+        "{target_mention} — **{author}** gave {target_mention} the most enthusiastic high-five! 🙌",
+        "{target_mention} — **{author}** didn't leave {target_mention} hanging — high five! ✋",
+        "**{target_mention}** and **{author}** connected with a perfect high-five! 💥",
     ],
 ))
 
@@ -477,11 +480,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="fistbump",
     description="Fist-bump someone",
     response_templates=[
-        "**{author}** gave **{target}** a solid fist bump! 👊",
-        "**{author}** and **{target}** connected with a cool fist bump! 💪",
-        "**{author}** bumped fists with **{target}** — respect! 👊",
-        "**{author}** offered a fist and **{target}** bumped it! 🤜🤛",
-        "**{author}** and **{target}** sealed it with a fist bump! 🔥",
+        "{target_mention} — **{author}** gave {target_mention} a solid fist bump! 👊",
+        "**{target_mention}** and **{author}** connected with a cool fist bump! 💪",
+        "{target_mention} — **{author}** bumped fists with {target_mention} — respect! 👊",
+        "{target_mention} — **{author}** offered a fist and {target_mention} bumped it! 🤜🤛",
+        "**{target_mention}** and **{author}** sealed it with a fist bump! 🔥",
     ],
 ))
 
@@ -490,11 +493,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="handshake",
     description="Shake hands with someone",
     response_templates=[
-        "**{author}** extended a hand to **{target}** for a firm handshake! 🤝",
-        "**{author}** and **{target}** shook hands formally! 🤝",
-        "**{author}** greeted **{target}** with a respectful handshake! 🤝",
-        "**{author}** and **{target}** shook on it! 🤝",
-        "**{author}** offered **{target}** a handshake and they accepted! 🤝",
+        "{target_mention} — **{author}** extended a hand to {target_mention} for a firm handshake! 🤝",
+        "**{target_mention}** and **{author}** shook hands formally! 🤝",
+        "{target_mention} — **{author}** greeted {target_mention} with a respectful handshake! 🤝",
+        "**{target_mention}** and **{author}** shook on it! 🤝",
+        "{target_mention} — **{author}** offered {target_mention} a handshake and they accepted! 🤝",
     ],
 ))
 
@@ -503,11 +506,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="bow",
     description="Bow respectfully",
     response_templates=[
-        "**{author}** bows gracefully before **{target}**! 🙇",
-        "**{author}** offers **{target}** a deep, respectful bow! ✨",
-        "**{author}** bowed dramatically toward **{target}**! 🎭",
-        "**{author}** lowered their head in a formal bow to **{target}**! 👑",
-        "**{author}** performed an elaborate bow before **{target}**! 🌸",
+        "{target_mention} — **{author}** bows gracefully before {target_mention}! 🙇",
+        "{target_mention} — **{author}** offers {target_mention} a deep, respectful bow! ✨",
+        "{target_mention} — **{author}** bowed dramatically toward {target_mention}! 🎭",
+        "{target_mention} — **{author}** lowered their head in a formal bow to {target_mention}! 👑",
+        "{target_mention} — **{author}** performed an elaborate bow before {target_mention}! 🌸",
     ],
 ))
 
@@ -516,11 +519,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="stare",
     description="Stare at someone",
     response_templates=[
-        "**{author}** stares intensely at **{target}** without blinking! 👁️",
-        "**{author}** fixes an unwavering gaze on **{target}**... 😑",
-        "**{author}** stares **{target}** down challengingly! 😤",
-        "**{author}** won't stop staring at **{target}**... 👀",
-        "**{author}** locks eyes with **{target}** and doesn't look away! 👁️‍🗨️",
+        "{target_mention} — **{author}** stares intensely at {target_mention} without blinking! 👁️",
+        "{target_mention} — **{author}** fixes an unwavering gaze on {target_mention}... 😑",
+        "{target_mention} — **{author}** stares {target_mention} down challengingly! 😤",
+        "{target_mention} — **{author}** won't stop staring at {target_mention}... 👀",
+        "{target_mention} — **{author}** locks eyes with {target_mention} and doesn't look away! 👁️‍🗨️",
     ],
 ))
 
@@ -529,11 +532,11 @@ register(ActionConfig(
     cooldown_seconds=15, gif_category="glare",
     description="Glare at someone",
     response_templates=[
-        "**{author}** shot **{target}** a withering glare! 😠",
-        "**{author}** glared daggers at **{target}**! 🗡️",
-        "**{author}** fixed **{target}** with an icy cold glare! 🥶",
-        "**{author}** narrowed their eyes and glared at **{target}**! 😤",
-        "**{author}** glared at **{target}** with maximum intensity! 💢",
+        "{target_mention} — **{author}** shot {target_mention} a withering glare! 😠",
+        "{target_mention} — **{author}** glared daggers at {target_mention}! 🗡️",
+        "{target_mention} — **{author}** fixed {target_mention} with an icy cold glare! 🥶",
+        "{target_mention} — **{author}** narrowed their eyes and glared at {target_mention}! 😤",
+        "{target_mention} — **{author}** glared at {target_mention} with maximum intensity! 💢",
     ],
 ))
 
@@ -542,11 +545,11 @@ register(ActionConfig(
     cooldown_seconds=300, gif_category="fuck",
     description="Have sex with someone",
     response_templates=[
-        "**{author}** pushed **{target}** against the wall and fucked them senseless! 🔥",
-        "**{author}** bent **{target}** over and gave them exactly what they begged for! 💦",
-        "**{author}** pounded **{target}** into the mattress until they were a moaning mess! 😈",
-        "**{author}** grabbed **{target}** by the hips and fucked them deep and hard! 🌶️",
-        "**{author}** fucked **{target}** raw — no mercy, no stopping! 💥",
+        "{target_mention} — **{author}** pushed {target_mention} against the wall and fucked them senseless! 🔥",
+        "{target_mention} — **{author}** bent {target_mention} over and gave them exactly what they begged for! 💦",
+        "{target_mention} — **{author}** pounded {target_mention} into the mattress until they were a moaning mess! 😈",
+        "{target_mention} — **{author}** grabbed {target_mention} by the hips and fucked them deep and hard! 🌶️",
+        "{target_mention} — **{author}** fucked {target_mention} raw — no mercy, no stopping! 💥",
     ],
 ))
 
@@ -555,11 +558,11 @@ register(ActionConfig(
     cooldown_seconds=300, gif_category="blowjob",
     description="Give someone a blowjob",
     response_templates=[
-        "**{author}** dropped to their knees and gave **{target}** a sloppy, deep blowjob! 💦",
-        "**{author}** wrapped their lips around **{target}** and sucked them off eagerly! 😛",
-        "**{author}** gagged on **{target}** while giving them the blowjob of their life! 🔥",
-        "**{author}** looked up at **{target}** with teary eyes and kept sucking! 👅",
-        "**{author}** took **{target}** all the way down their throat without hesitation! 💥",
+        "{target_mention} — **{author}** dropped to their knees and gave {target_mention} a sloppy, deep blowjob! 💦",
+        "{target_mention} — **{author}** wrapped their lips around {target_mention} and sucked them off eagerly! 😛",
+        "{target_mention} — **{author}** gagged on {target_mention} while giving them the blowjob of their life! 🔥",
+        "{target_mention} — **{author}** looked up at {target_mention} with teary eyes and kept sucking! 👅",
+        "{target_mention} — **{author}** took {target_mention} all the way down their throat without hesitation! 💥",
     ],
 ))
 
@@ -568,11 +571,11 @@ register(ActionConfig(
     cooldown_seconds=300, gif_category="creampie",
     description="Creampie someone",
     response_templates=[
-        "**{author}** filled **{target}** up completely with a massive creampie! 💦",
-        "**{author}** came deep inside **{target}**, leaving them dripping! 🔥",
-        "**{author}** pumped **{target}** full to the brim — creampied and claimed! 😈",
-        "**{author}** buried themselves in **{target}** and unloaded everything! 💥",
-        "**{author}** gave **{target}** a creampie they won't forget anytime soon! 🌶️",
+        "{target_mention} — **{author}** filled {target_mention} up completely with a massive creampie! 💦",
+        "{target_mention} — **{author}** came deep inside {target_mention}, leaving them dripping! 🔥",
+        "{target_mention} — **{author}** pumped {target_mention} full to the brim — creampied and claimed! 😈",
+        "{target_mention} — **{author}** buried themselves in {target_mention} and unloaded everything! 💥",
+        "{target_mention} — **{author}** gave {target_mention} a creampie they won't forget anytime soon! 🌶️",
     ],
 ))
 
@@ -582,11 +585,11 @@ register(ActionConfig(
     self_targetable=True, requires_target=False,
     description="Moan at/for someone",
     response_templates=[
-        "**{author}** let out a loud, needy moan for **{target}**! 😩",
-        "**{author}** moaned **{target}**'s name breathlessly! 💦",
-        "**{author}** couldn't hold back their moans because of **{target}**! 🔥",
-        "**{author}** moaned shamelessly, making **{target}** blush! 😳",
-        "**{author}** let out the most obscene moan right in **{target}**'s ear! 😈",
+        "{target_mention} — **{author}** let out a loud, needy moan for {target_mention}! 😩",
+        "{target_mention} — **{author}** moaned {target_mention}'s name breathlessly! 💦",
+        "{target_mention} — **{author}** couldn't hold back their moans because of {target_mention}! 🔥",
+        "{target_mention} — **{author}** moaned shamelessly, making {target_mention} blush! 😳",
+        "{target_mention} — **{author}** let out the most obscene moan right in {target_mention}'s ear! 😈",
     ],
 ))
 
@@ -596,11 +599,11 @@ register(ActionConfig(
     self_targetable=True, requires_target=False,
     description="Strip for someone",
     response_templates=[
-        "**{author}** slowly stripped in front of **{target}**, teasing every second! 🔥",
-        "**{author}** peeled off every piece of clothing for **{target}**! 😈",
-        "**{author}** did a seductive striptease just for **{target}**! 💃",
-        "**{author}** dropped everything and stood bare before **{target}**! 💦",
-        "**{author}** stripped completely, holding **{target}**'s gaze the entire time! 😏",
+        "{target_mention} — **{author}** slowly stripped in front of {target_mention}, teasing every second! 🔥",
+        "{target_mention} — **{author}** peeled off every piece of clothing for {target_mention}! 😈",
+        "{target_mention} — **{author}** did a seductive striptease just for {target_mention}! 💃",
+        "{target_mention} — **{author}** dropped everything and stood bare before {target_mention}! 💦",
+        "{target_mention} — **{author}** stripped completely, holding {target_mention}'s gaze the entire time! 😏",
     ],
 ))
 
@@ -609,11 +612,11 @@ register(ActionConfig(
     cooldown_seconds=60, gif_category="spank",
     description="Spank someone",
     response_templates=[
-        "**{author}** gave **{target}**'s ass a firm, satisfying spank! 👋",
-        "**{author}** smacked **{target}**'s rear hard enough to leave a mark! 🔥",
-        "**{author}** spanked **{target}** repeatedly until they yelped! 😈",
-        "**{author}** grabbed **{target}** and delivered a sharp, stinging spank! 💥",
-        "**{author}** spanked **{target}** and told them they'd been very naughty! 😏",
+        "{target_mention} — **{author}** gave {target_mention}'s ass a firm, satisfying spank! 👋",
+        "{target_mention} — **{author}** smacked {target_mention}'s rear hard enough to leave a mark! 🔥",
+        "{target_mention} — **{author}** spanked {target_mention} repeatedly until they yelped! 😈",
+        "{target_mention} — **{author}** grabbed {target_mention} and delivered a sharp, stinging spank! 💥",
+        "{target_mention} — **{author}** spanked {target_mention} and told them they'd been very naughty! 😏",
     ],
 ))
 
@@ -622,11 +625,11 @@ register(ActionConfig(
     cooldown_seconds=60, gif_category="grope",
     description="Grope someone",
     response_templates=[
-        "**{author}** reached over and groped **{target}** shamelessly! 😏",
-        "**{author}** grabbed **{target}** in all the right places! 🔥",
-        "**{author}** couldn't keep their hands off **{target}** for a second! 😈",
-        "**{author}** groped **{target}** from behind without any warning! 💦",
-        "**{author}** squeezed **{target}** firmly and smirked! 😏",
+        "{target_mention} — **{author}** reached over and groped {target_mention} shamelessly! 😏",
+        "{target_mention} — **{author}** grabbed {target_mention} in all the right places! 🔥",
+        "{target_mention} — **{author}** couldn't keep their hands off {target_mention} for a second! 😈",
+        "{target_mention} — **{author}** groped {target_mention} from behind without any warning! 💦",
+        "{target_mention} — **{author}** squeezed {target_mention} firmly and smirked! 😏",
     ],
 ))
 
@@ -635,11 +638,11 @@ register(ActionConfig(
     cooldown_seconds=180, gif_category="fingerfuck",
     description="Finger someone",
     response_templates=[
-        "**{author}** slipped their fingers inside **{target}** and worked them mercilessly! 💦",
-        "**{author}** fingered **{target}** until they were a trembling, soaked mess! 🔥",
-        "**{author}** curled their fingers deep inside **{target}** and hit every spot! 😈",
-        "**{author}** had **{target}** squirming with just their fingers! 💥",
-        "**{author}** finger-fucked **{target}** relentlessly until they begged! 🌶️",
+        "{target_mention} — **{author}** slipped their fingers inside {target_mention} and worked them mercilessly! 💦",
+        "{target_mention} — **{author}** fingered {target_mention} until they were a trembling, soaked mess! 🔥",
+        "{target_mention} — **{author}** curled their fingers deep inside {target_mention} and hit every spot! 😈",
+        "{target_mention} — **{author}** had {target_mention} squirming with just their fingers! 💥",
+        "{target_mention} — **{author}** finger-fucked {target_mention} relentlessly until they begged! 🌶️",
     ],
 ))
 
@@ -648,11 +651,11 @@ register(ActionConfig(
     cooldown_seconds=60, gif_category="tease",
     description="Tease someone sexually",
     response_templates=[
-        "**{author}** ran their hands all over **{target}** without giving them what they want! 😏",
-        "**{author}** whispered something filthy in **{target}**'s ear and walked away! 🔥",
-        "**{author}** teased **{target}** to the edge and stopped — no relief! 😈",
-        "**{author}** pressed their body against **{target}** then pulled away with a smirk! 💦",
-        "**{author}** had **{target}** desperately begging with just a tease! 😩",
+        "{target_mention} — **{author}** ran their hands all over {target_mention} without giving them what they want! 😏",
+        "{target_mention} — **{author}** whispered something filthy in {target_mention}'s ear and walked away! 🔥",
+        "{target_mention} — **{author}** teased {target_mention} to the edge and stopped — no relief! 😈",
+        "{target_mention} — **{author}** pressed their body against {target_mention} then pulled away with a smirk! 💦",
+        "{target_mention} — **{author}** had {target_mention} desperately begging with just a tease! 😩",
     ],
 ))
 
@@ -661,11 +664,11 @@ register(ActionConfig(
     cooldown_seconds=120, gif_category="seduce",
     description="Seduce someone",
     response_templates=[
-        "**{author}** seduced **{target}** with a look that said everything! 😏",
-        "**{author}** moved in close and completely seduced **{target}**! 🔥",
-        "**{author}** whispered something that made **{target}** completely cave! 💋",
-        "**{author}** used every trick to seduce **{target}** — and it worked! 😈",
-        "**{author}** seduced **{target}** effortlessly, leaving them wanting more! 💦",
+        "{target_mention} — **{author}** seduced {target_mention} with a look that said everything! 😏",
+        "{target_mention} — **{author}** moved in close and completely seduced {target_mention}! 🔥",
+        "{target_mention} — **{author}** whispered something that made {target_mention} completely cave! 💋",
+        "{target_mention} — **{author}** used every trick to seduce {target_mention} — and it worked! 😈",
+        "{target_mention} — **{author}** seduced {target_mention} effortlessly, leaving them wanting more! 💦",
     ],
 ))
 
@@ -674,11 +677,11 @@ register(ActionConfig(
     cooldown_seconds=120, gif_category="makeout",
     description="Make out with someone",
     response_templates=[
-        "**{author}** grabbed **{target}** and kissed them so deeply they forgot to breathe! 💋",
-        "**{author}** and **{target}** made out passionately, completely lost in each other! 🔥",
-        "**{author}** pinned **{target}** and made out with them hungrily! 😈",
-        "**{author}** pulled **{target}** into a long, hot, sloppy makeout session! 💦",
-        "**{author}** and **{target}** couldn't stop making out no matter who was watching! 😏",
+        "{target_mention} — **{author}** grabbed {target_mention} and kissed them so deeply they forgot to breathe! 💋",
+        "**{target_mention}** and **{author}** made out passionately, completely lost in each other! 🔥",
+        "{target_mention} — **{author}** pinned {target_mention} and made out with them hungrily! 😈",
+        "{target_mention} — **{author}** pulled {target_mention} into a long, hot, sloppy makeout session! 💦",
+        "**{target_mention}** and **{author}** couldn't stop making out no matter who was watching! 😏",
     ],
 ))
 
@@ -687,11 +690,11 @@ register(ActionConfig(
     cooldown_seconds=300, gif_category="ride",
     description="Ride someone",
     response_templates=[
-        "**{author}** climbed on top of **{target}** and rode them hard! 🔥",
-        "**{author}** pinned **{target}** down and rode them until they both lost their minds! 💦",
-        "**{author}** took control and rode **{target}** at their own wild pace! 😈",
-        "**{author}** sat down on **{target}** and rode them to oblivion! 💥",
-        "**{author}** bounced on **{target}** relentlessly — they had zero complaints! 🌶️",
+        "{target_mention} — **{author}** climbed on top of {target_mention} and rode them hard! 🔥",
+        "{target_mention} — **{author}** pinned {target_mention} down and rode them until they both lost their minds! 💦",
+        "{target_mention} — **{author}** took control and rode {target_mention} at their own wild pace! 😈",
+        "{target_mention} — **{author}** sat down on {target_mention} and rode them to oblivion! 💥",
+        "{target_mention} — **{author}** bounced on {target_mention} relentlessly — they had zero complaints! 🌶️",
     ],
 ))
 
@@ -701,11 +704,11 @@ register(ActionConfig(
     self_targetable=True, requires_target=False,
     description="Cum on/for someone",
     response_templates=[
-        "**{author}** came all over **{target}** and marked them completely! 💦",
-        "**{author}** couldn't hold back and came hard all over **{target}**! 🔥",
-        "**{author}** moaned **{target}**'s name as they came undone! 😩",
-        "**{author}** made a total mess on **{target}** and didn't apologize! 😈",
-        "**{author}** painted **{target}** white and stepped back to admire! 💥",
+        "{target_mention} — **{author}** came all over {target_mention} and marked them completely! 💦",
+        "{target_mention} — **{author}** couldn't hold back and came hard all over {target_mention}! 🔥",
+        "{target_mention} — **{author}** moaned {target_mention}'s name as they came undone! 😩",
+        "{target_mention} — **{author}** made a total mess on {target_mention} and didn't apologize! 😈",
+        "{target_mention} — **{author}** painted {target_mention} white and stepped back to admire! 💥",
     ],
 ))
 
@@ -714,11 +717,11 @@ register(ActionConfig(
     cooldown_seconds=120, gif_category="undress",
     description="Undress someone",
     response_templates=[
-        "**{author}** slowly undressed **{target}**, taking their sweet time! 😏",
-        "**{author}** peeled every layer off **{target}** with deliberate hands! 🔥",
-        "**{author}** undressed **{target}** before they could even protest! 😈",
-        "**{author}** stripped **{target}** down, leaving them completely bare! 💦",
-        "**{author}** undressed **{target}** with hungry eyes the whole time! 💋",
+        "{target_mention} — **{author}** slowly undressed {target_mention}, taking their sweet time! 😏",
+        "{target_mention} — **{author}** peeled every layer off {target_mention} with deliberate hands! 🔥",
+        "{target_mention} — **{author}** undressed {target_mention} before they could even protest! 😈",
+        "{target_mention} — **{author}** stripped {target_mention} down, leaving them completely bare! 💦",
+        "{target_mention} — **{author}** undressed {target_mention} with hungry eyes the whole time! 💋",
     ],
 ))
 
@@ -727,11 +730,11 @@ register(ActionConfig(
     cooldown_seconds=240, gif_category="lickout",
     description="Go down on someone / eat someone out",
     response_templates=[
-        "**{author}** buried their face between **{target}**'s thighs and went to town! 👅",
-        "**{author}** ate **{target}** out until their legs stopped working! 🔥",
-        "**{author}** licked **{target}** out slowly, savoring every second! 💦",
-        "**{author}** had **{target}** grabbing the sheets with just their tongue! 😈",
-        "**{author}** went down on **{target}** and didn't come up until they screamed! 💥",
+        "{target_mention} — **{author}** buried their face between {target_mention}'s thighs and went to town! 👅",
+        "{target_mention} — **{author}** ate {target_mention} out until their legs stopped working! 🔥",
+        "{target_mention} — **{author}** licked {target_mention} out slowly, savoring every second! 💦",
+        "{target_mention} — **{author}** had {target_mention} grabbing the sheets with just their tongue! 😈",
+        "{target_mention} — **{author}** went down on {target_mention} and didn't come up until they screamed! 💥",
     ],
 ))
 
@@ -740,11 +743,11 @@ register(ActionConfig(
     cooldown_seconds=180, gif_category="handjob",
     description="Give someone a handjob",
     response_templates=[
-        "**{author}** wrapped their hand around **{target}** and stroked them slowly at first! 💦",
-        "**{author}** gave **{target}** a handjob so good their knees went weak! 🔥",
-        "**{author}** gripped **{target}** tight and worked them until they lost it! 😈",
-        "**{author}** teased **{target}** with a slow, torturous handjob! 😏",
-        "**{author}** stroked **{target}** off expertly — they didn't last long! 💥",
+        "{target_mention} — **{author}** wrapped their hand around {target_mention} and stroked them slowly at first! 💦",
+        "{target_mention} — **{author}** gave {target_mention} a handjob so good their knees went weak! 🔥",
+        "{target_mention} — **{author}** gripped {target_mention} tight and worked them until they lost it! 😈",
+        "{target_mention} — **{author}** teased {target_mention} with a slow, torturous handjob! 😏",
+        "{target_mention} — **{author}** stroked {target_mention} off expertly — they didn't last long! 💥",
     ],
 ))
 
@@ -753,11 +756,11 @@ register(ActionConfig(
     cooldown_seconds=240, gif_category="titfuck",
     description="Give someone a titfuck",
     response_templates=[
-        "**{author}** pressed **{target}** between their chest and worked them slowly! 🔥",
-        "**{author}** gave **{target}** a titfuck they'll be dreaming about for weeks! 💦",
-        "**{author}** squeezed **{target}** between their breasts and looked up with a grin! 😈",
-        "**{author}** wrapped **{target}** up snug and went to work — messy ending guaranteed! 💥",
-        "**{author}** treated **{target}** to a slow, slippery titfuck until they exploded! 🌶️",
+        "{target_mention} — **{author}** pressed {target_mention} between their chest and worked them slowly! 🔥",
+        "{target_mention} — **{author}** gave {target_mention} a titfuck they'll be dreaming about for weeks! 💦",
+        "{target_mention} — **{author}** squeezed {target_mention} between their breasts and looked up with a grin! 😈",
+        "{target_mention} — **{author}** wrapped {target_mention} up snug and went to work — messy ending guaranteed! 💥",
+        "{target_mention} — **{author}** treated {target_mention} to a slow, slippery titfuck until they exploded! 🌶️",
     ],
 ))
 
@@ -766,11 +769,11 @@ register(ActionConfig(
     cooldown_seconds=300, gif_category="anal",
     description="Have anal sex with someone",
     response_templates=[
-        "**{author}** pushed into **{target}**'s ass slowly and then gave them everything! 🔥",
-        "**{author}** took **{target}**'s ass with zero hesitation! 💦",
-        "**{author}** spread **{target}** open and fucked their ass deep and hard! 😈",
-        "**{author}** filled **{target}**'s ass completely and didn't stop until they begged! 💥",
-        "**{author}** wrecked **{target}**'s ass and left them a trembling mess! 🌶️",
+        "{target_mention} — **{author}** pushed into {target_mention}'s ass slowly and then gave them everything! 🔥",
+        "{target_mention} — **{author}** took {target_mention}'s ass with zero hesitation! 💦",
+        "{target_mention} — **{author}** spread {target_mention} open and fucked their ass deep and hard! 😈",
+        "{target_mention} — **{author}** filled {target_mention}'s ass completely and didn't stop until they begged! 💥",
+        "{target_mention} — **{author}** wrecked {target_mention}'s ass and left them a trembling mess! 🌶️",
     ],
 ))
 
@@ -779,11 +782,11 @@ register(ActionConfig(
     cooldown_seconds=240, gif_category="bondage",
     description="Tie someone up",
     response_templates=[
-        "**{author}** tied **{target}** up tight and left them completely helpless! 🔥",
-        "**{author}** bound **{target}**'s wrists and ankles — they weren't going anywhere! 😈",
-        "**{author}** wrapped **{target}** in rope and admired their work! 💦",
-        "**{author}** had **{target}** bound and blindfolded in seconds! 💥",
-        "**{author}** tied **{target}** up so perfectly they couldn't even wiggle free! 🌶️",
+        "{target_mention} — **{author}** tied {target_mention} up tight and left them completely helpless! 🔥",
+        "{target_mention} — **{author}** bound {target_mention}'s wrists and ankles — they weren't going anywhere! 😈",
+        "{target_mention} — **{author}** wrapped {target_mention} in rope and admired their work! 💦",
+        "{target_mention} — **{author}** had {target_mention} bound and blindfolded in seconds! 💥",
+        "{target_mention} — **{author}** tied {target_mention} up so perfectly they couldn't even wiggle free! 🌶️",
     ],
 ))
 
@@ -792,11 +795,11 @@ register(ActionConfig(
     cooldown_seconds=240, gif_category="dominate",
     description="Dominate someone",
     response_templates=[
-        "**{author}** pinned **{target}** down and made it very clear who was in charge! 🔥",
-        "**{author}** grabbed **{target}** by the collar and dominated them completely! 😈",
-        "**{author}** took full control of **{target}** and they loved every second! 💦",
-        "**{author}** dominated **{target}** until they were completely and utterly broken in! 💥",
-        "**{author}** had **{target}** submitting without a single word of protest! 😏",
+        "{target_mention} — **{author}** pinned {target_mention} down and made it very clear who was in charge! 🔥",
+        "{target_mention} — **{author}** grabbed {target_mention} by the collar and dominated them completely! 😈",
+        "{target_mention} — **{author}** took full control of {target_mention} and they loved every second! 💦",
+        "{target_mention} — **{author}** dominated {target_mention} until they were completely and utterly broken in! 💥",
+        "{target_mention} — **{author}** had {target_mention} submitting without a single word of protest! 😏",
     ],
 ))
 
@@ -806,11 +809,11 @@ register(ActionConfig(
     self_targetable=True, requires_target=False,
     description="Submit to someone",
     response_templates=[
-        "**{author}** dropped to their knees and submitted fully to **{target}**! 💦",
-        "**{author}** gave themselves over to **{target}** completely — body and soul! 🔥",
-        "**{author}** bowed their head and submitted to **{target}**'s every command! 😈",
-        "**{author}** let **{target}** take total control and surrendered willingly! 💥",
-        "**{author}** submitted to **{target}** with a breathless, needy whimper! 😩",
+        "{target_mention} — **{author}** dropped to their knees and submitted fully to {target_mention}! 💦",
+        "{target_mention} — **{author}** gave themselves over to {target_mention} completely — body and soul! 🔥",
+        "{target_mention} — **{author}** bowed their head and submitted to {target_mention}'s every command! 😈",
+        "{target_mention} — **{author}** let {target_mention} take total control and surrendered willingly! 💥",
+        "{target_mention} — **{author}** submitted to {target_mention} with a breathless, needy whimper! 😩",
     ],
 ))
 
@@ -819,11 +822,11 @@ register(ActionConfig(
     cooldown_seconds=180, gif_category="choke",
     description="Choke someone during intimacy",
     response_templates=[
-        "**{author}** wrapped their hand around **{target}**'s throat and squeezed just right! 🔥",
-        "**{author}** choked **{target}** gently and watched their eyes roll back! 😈",
-        "**{author}** gripped **{target}**'s throat firmly — they gasped and loved it! 💦",
-        "**{author}** choked **{target}** with a steady hand and a dangerous smirk! 💥",
-        "**{author}** took **{target}** by the throat and made them see stars! 🌶️",
+        "{target_mention} — **{author}** wrapped their hand around {target_mention}'s throat and squeezed just right! 🔥",
+        "{target_mention} — **{author}** choked {target_mention} gently and watched their eyes roll back! 😈",
+        "{target_mention} — **{author}** gripped {target_mention}'s throat firmly — they gasped and loved it! 💦",
+        "{target_mention} — **{author}** choked {target_mention} with a steady hand and a dangerous smirk! 💥",
+        "{target_mention} — **{author}** took {target_mention} by the throat and made them see stars! 🌶️",
     ],
 ))
 
@@ -832,11 +835,11 @@ register(ActionConfig(
     cooldown_seconds=240, gif_category="edging",
     description="Edge someone relentlessly",
     response_templates=[
-        "**{author}** brought **{target}** right to the edge and pulled back — again and again! 😈",
-        "**{author}** edged **{target}** until they were sobbing and begging to finish! 🔥",
-        "**{author}** kept **{target}** on the edge for so long they lost track of time! 💦",
-        "**{author}** denied **{target}** over and over with a satisfied smirk! 😏",
-        "**{author}** tortured **{target}** with relentless edging — no release in sight! 💥",
+        "{target_mention} — **{author}** brought {target_mention} right to the edge and pulled back — again and again! 😈",
+        "{target_mention} — **{author}** edged {target_mention} until they were sobbing and begging to finish! 🔥",
+        "{target_mention} — **{author}** kept {target_mention} on the edge for so long they lost track of time! 💦",
+        "{target_mention} — **{author}** denied {target_mention} over and over with a satisfied smirk! 😏",
+        "{target_mention} — **{author}** tortured {target_mention} with relentless edging — no release in sight! 💥",
     ],
 ))
 
@@ -845,11 +848,11 @@ register(ActionConfig(
     cooldown_seconds=600, gif_category="gangbang",
     description="Gangbang someone",
     response_templates=[
-        "**{author}** organized a full gangbang with **{target}** at the center of it all! 🔥",
-        "**{author}** and a crowd took turns wrecking **{target}** completely! 💦",
-        "**{author}** had **{target}** completely surrounded and used from every angle! 😈",
-        "**{author}** arranged a gangbang for **{target}** — they could barely walk after! 💥",
-        "**{author}** let everyone have a turn with **{target}** until they were utterly spent! 🌶️",
+        "{target_mention} — **{author}** organized a full gangbang with {target_mention} at the center of it all! 🔥",
+        "{target_mention} — **{author}** and a crowd took turns wrecking {target_mention} completely! 💦",
+        "{target_mention} — **{author}** had {target_mention} completely surrounded and used from every angle! 😈",
+        "{target_mention} — **{author}** arranged a gangbang for {target_mention} — they could barely walk after! 💥",
+        "{target_mention} — **{author}** let everyone have a turn with {target_mention} until they were utterly spent! 🌶️",
     ],
 ))
 
@@ -858,11 +861,11 @@ register(ActionConfig(
     cooldown_seconds=420, gif_category="threesome",
     description="Have a threesome with someone",
     response_templates=[
-        "**{author}** pulled in a third and had an absolutely wild threesome with **{target}**! 🔥",
-        "**{author}** and **{target}** invited someone extra — the night got very interesting! 💦",
-        "**{author}** arranged a threesome with **{target}** and nobody left unsatisfied! 😈",
-        "**{author}** and **{target}** got tangled up with a third person in the best way! 💥",
-        "**{author}** had a filthy threesome with **{target}** — details too hot to share! 🌶️",
+        "{target_mention} — **{author}** pulled in a third and had an absolutely wild threesome with {target_mention}! 🔥",
+        "**{target_mention}** and **{author}** invited someone extra — the night got very interesting! 💦",
+        "{target_mention} — **{author}** arranged a threesome with {target_mention} and nobody left unsatisfied! 😈",
+        "**{target_mention}** and **{author}** got tangled up with a third person in the best way! 💥",
+        "{target_mention} — **{author}** had a filthy threesome with {target_mention} — details too hot to share! 🌶️",
     ],
 ))
 
@@ -871,11 +874,11 @@ register(ActionConfig(
     cooldown_seconds=240, gif_category="facesit",
     description="Sit on someone's face",
     response_templates=[
-        "**{author}** sat right down on **{target}**'s face and made themselves comfortable! 💦",
-        "**{author}** smothered **{target}** with a full facesit and dared them to complain! 🔥",
-        "**{author}** lowered themselves onto **{target}**'s face with zero hesitation! 😈",
-        "**{author}** facesit on **{target}** and rode their tongue until satisfied! 💥",
-        "**{author}** gave **{target}** a facesit they'd been secretly dreaming about! 😏",
+        "{target_mention} — **{author}** sat right down on {target_mention}'s face and made themselves comfortable! 💦",
+        "{target_mention} — **{author}** smothered {target_mention} with a full facesit and dared them to complain! 🔥",
+        "{target_mention} — **{author}** lowered themselves onto {target_mention}'s face with zero hesitation! 😈",
+        "{target_mention} — **{author}** facesit on {target_mention} and rode their tongue until satisfied! 💥",
+        "{target_mention} — **{author}** gave {target_mention} a facesit they'd been secretly dreaming about! 😏",
     ],
 ))
 
@@ -884,11 +887,11 @@ register(ActionConfig(
     cooldown_seconds=300, gif_category="cum_facial",
     description="Give someone a facial",
     response_templates=[
-        "**{author}** finished all over **{target}**'s face and stepped back to admire! 💦",
-        "**{author}** gave **{target}** a dripping facial they wore with zero shame! 🔥",
-        "**{author}** painted **{target}**'s face completely and they didn't even flinch! 😈",
-        "**{author}** unloaded on **{target}**'s face — they looked absolutely ruined! 💥",
-        "**{author}** gave **{target}** a messy facial and called it a masterpiece! 🌶️",
+        "{target_mention} — **{author}** finished all over {target_mention}'s face and stepped back to admire! 💦",
+        "{target_mention} — **{author}** gave {target_mention} a dripping facial they wore with zero shame! 🔥",
+        "{target_mention} — **{author}** painted {target_mention}'s face completely and they didn't even flinch! 😈",
+        "{target_mention} — **{author}** unloaded on {target_mention}'s face — they looked absolutely ruined! 💥",
+        "{target_mention} — **{author}** gave {target_mention} a messy facial and called it a masterpiece! 🌶️",
     ],
 ))
 
@@ -897,11 +900,11 @@ register(ActionConfig(
     cooldown_seconds=300, gif_category="roleplay_sex",
     description="Do a sexual roleplay with someone",
     response_templates=[
-        "**{author}** dragged **{target}** into a filthy sexual roleplay and neither held back! 🔥",
-        "**{author}** started a spicy roleplay scenario with **{target}** — things escalated fast! 💦",
-        "**{author}** and **{target}** got into a steamy roleplay that got very explicit very quickly! 😈",
-        "**{author}** set the scene for a naughty roleplay and **{target}** played along perfectly! 💥",
-        "**{author}** and **{target}** lost themselves completely in an explicit roleplay session! 🌶️",
+        "{target_mention} — **{author}** dragged {target_mention} into a filthy sexual roleplay and neither held back! 🔥",
+        "{target_mention} — **{author}** started a spicy roleplay scenario with {target_mention} — things escalated fast! 💦",
+        "**{target_mention}** and **{author}** got into a steamy roleplay that got very explicit very quickly! 😈",
+        "{target_mention} — **{author}** set the scene for a naughty roleplay and {target_mention} played along perfectly! 💥",
+        "**{target_mention}** and **{author}** lost themselves completely in an explicit roleplay session! 🌶️",
     ],
 ))
 
@@ -911,11 +914,11 @@ register(ActionConfig(
     self_targetable=True, requires_target=False,
     description="Have an orgasm because of someone",
     response_templates=[
-        "**{author}** came undone because of **{target}** — loudly and without shame! 💦",
-        "**{author}** hit an earth-shattering orgasm thanks to **{target}**! 🔥",
-        "**{author}** screamed **{target}**'s name as they orgasmed hard! 😩",
-        "**{author}** lost complete control and orgasmed right in front of **{target}**! 💥",
-        "**{author}** had the most intense orgasm of their life because of **{target}**! 🌶️",
+        "{target_mention} — **{author}** came undone because of {target_mention} — loudly and without shame! 💦",
+        "{target_mention} — **{author}** hit an earth-shattering orgasm thanks to {target_mention}! 🔥",
+        "{target_mention} — **{author}** screamed {target_mention}'s name as they orgasmed hard! 😩",
+        "{target_mention} — **{author}** lost complete control and orgasmed right in front of {target_mention}! 💥",
+        "{target_mention} — **{author}** had the most intense orgasm of their life because of {target_mention}! 🌶️",
     ],
 ))
 
@@ -925,10 +928,10 @@ register(ActionConfig(
     self_targetable=True, requires_target=False,
     description="Squirt because of someone",
     response_templates=[
-        "**{author}** squirted all over **{target}** and couldn't even apologize! 💦",
-        "**{author}** squirted so hard because of **{target}** — absolutely soaked! 🔥",
-        "**{author}** lost complete control and squirted everywhere thanks to **{target}**! 😈",
-        "**{author}** made a massive mess squirting all over **{target}**! 💥",
-        "**{author}** squirted uncontrollably — **{target}** looked very proud of themselves! 😏",
+        "{target_mention} — **{author}** squirted all over {target_mention} and couldn't even apologize! 💦",
+        "{target_mention} — **{author}** squirted so hard because of {target_mention} — absolutely soaked! 🔥",
+        "{target_mention} — **{author}** lost complete control and squirted everywhere thanks to {target_mention}! 😈",
+        "{target_mention} — **{author}** made a massive mess squirting all over {target_mention}! 💥",
+        "{target_mention} — **{author}** squirted uncontrollably — {target_mention} looked very proud of themselves! 😏",
     ],
 ))
