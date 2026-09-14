@@ -619,6 +619,137 @@ class GamesCog(commands.Cog, name="Games"):
                 cache_set(f"guess:{uid}", None)
                 break
 
+    # ---------- Blackjack ----------
+
+    def _draw_card(self) -> tuple[str, str]:
+        return random.choice(self.blackjack_cards), random.choice(self.blackjack_suits)
+
+    def _hand_value(self, hand: list[tuple[str, str]]) -> int:
+        total = 0
+        aces = 0
+        for rank, _ in hand:
+            if rank in ("J", "Q", "K"):
+                total += 10
+            elif rank == "A":
+                total += 11
+                aces += 1
+            else:
+                total += int(rank)
+        while total > 21 and aces:
+            total -= 10
+            aces -= 1
+        return total
+
+    def _hand_str(self, hand: list[tuple[str, str]]) -> str:
+        return " ".join(f"{rank}{suit}" for rank, suit in hand)
+
+    @app_commands.command(
+        name="blackjack",
+        description="Play a hand of Blackjack against the dealer"
+    )
+    async def blackjack(self, interaction: discord.Interaction) -> None:
+        """Play a hand of Blackjack against the dealer."""
+        await interaction.response.defer()
+
+        uid = interaction.user.id
+
+        if cache_get(f"blackjack:{uid}"):
+            await interaction.followup.send(
+                "🃏 You already have a hand in progress!",
+                ephemeral=True
+            )
+            return
+
+        cache_set(f"blackjack:{uid}", True, ttl=120)
+
+        await self.user_repo.get_or_create(
+            uid,
+            interaction.user.display_name,
+            str(interaction.user.display_avatar.url),
+        )
+
+        player_hand = [self._draw_card(), self._draw_card()]
+        dealer_hand = [self._draw_card(), self._draw_card()]
+
+        view = BlackjackView(interaction.user, player_hand, dealer_hand, self)
+
+        if self._hand_value(player_hand) == 21:
+            await view.finish(interaction, natural=True)
+            return
+
+        embed = view.build_embed(reveal_dealer=False)
+        await interaction.followup.send(embed=embed, view=view)
+
+    # ---------- Tic-Tac-Toe ----------
+
+    @app_commands.command(
+        name="tictactoe",
+        description="Challenge another player to Tic-Tac-Toe"
+    )
+    @app_commands.describe(opponent="The player you want to challenge")
+    async def tictactoe(
+        self,
+        interaction: discord.Interaction,
+        opponent: discord.User
+    ) -> None:
+        """Challenge another player to Tic-Tac-Toe."""
+        await interaction.response.defer()
+
+        if opponent.id == interaction.user.id:
+            await interaction.followup.send("❌ You can't play against yourself!", ephemeral=True)
+            return
+
+        if opponent.bot:
+            await interaction.followup.send("❌ You can't challenge bots!", ephemeral=True)
+            return
+
+        embed = discord.Embed(
+            title="⭕ Tic-Tac-Toe Challenge!",
+            description=f"{interaction.user.mention} challenges {opponent.mention} to Tic-Tac-Toe!",
+            color=0x1ABC9C,
+        )
+        embed.set_footer(text="Winner gets +20 XP!")
+
+        view = TicTacToeChallengeView(interaction.user, opponent, self)
+        await interaction.followup.send(embed=embed, view=view)
+
+    # ---------- Heist (multiplayer) ----------
+
+    @app_commands.command(
+        name="heist",
+        description="Start a crew heist -- rally players and go for the big score!"
+    )
+    async def heist(self, interaction: discord.Interaction) -> None:
+        """Start a cooperative multiplayer heist. The bigger the crew, the
+        better the odds, but a botched job costs everyone who joined."""
+        await interaction.response.defer()
+
+        channel_id = interaction.channel_id
+
+        if cache_get(f"heist:{channel_id}"):
+            await interaction.followup.send(
+                "🚨 A heist is already being planned in this channel!",
+                ephemeral=True
+            )
+            return
+
+        cache_set(f"heist:{channel_id}", True, ttl=45)
+
+        await self.user_repo.get_or_create(
+            uid := interaction.user.id,
+            interaction.user.display_name,
+            str(interaction.user.display_avatar.url),
+        )
+
+        view = HeistView(interaction.user, self)
+        embed = view.build_lobby_embed()
+        message = await interaction.followup.send(embed=embed, view=view)
+        view.message = message
+
+        await asyncio.sleep(20)
+        await view.resolve()
+        cache_set(f"heist:{channel_id}", None)
+
     @app_commands.command(
         name="rps_pvp",
         description="Challenge another player to Rock Paper Scissors"
@@ -676,15 +807,15 @@ class RPSChoiceView(discord.ui.View):
         self.p2_voted = False
     
     @discord.ui.button(label="Rock 🪨", style=discord.ButtonStyle.primary)
-    async def rock(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def rock(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self._handle_choice(interaction, "rock")
     
     @discord.ui.button(label="Paper 📄", style=discord.ButtonStyle.primary)
-    async def paper(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def paper(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self._handle_choice(interaction, "paper")
     
     @discord.ui.button(label="Scissors ✂️", style=discord.ButtonStyle.primary)
-    async def scissors(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def scissors(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self._handle_choice(interaction, "scissors")
     
     async def _handle_choice(self, interaction: discord.Interaction, choice: str):
@@ -784,7 +915,7 @@ class RPSChallengeView(discord.ui.View):
         self.game_cog = game_cog
     
     @discord.ui.button(label="Accept Challenge 🎮", style=discord.ButtonStyle.success)
-    async def accept(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.opponent.id:
             await interaction.response.send_message("❌ Only the challenged player can accept!", ephemeral=True)
             return
@@ -814,7 +945,7 @@ class RPSChallengeView(discord.ui.View):
         )
     
     @discord.ui.button(label="Decline ❌", style=discord.ButtonStyle.danger)
-    async def decline(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def decline(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.opponent.id:
             await interaction.response.send_message("❌ Only the challenged player can decline!", ephemeral=True)
             return
@@ -829,6 +960,324 @@ class RPSChallengeView(discord.ui.View):
             color=0xE74C3C,
         )
         await interaction.response.edit_message(embed=embed, view=None)
+
+
+class BlackjackView(discord.ui.View):
+    """Hit or Stand against a dealer that plays a standard 17-stand rule."""
+
+    def __init__(
+        self,
+        player: discord.User,
+        player_hand: list[tuple[str, str]],
+        dealer_hand: list[tuple[str, str]],
+        game_cog: "GamesCog",
+    ):
+        super().__init__(timeout=60.0)
+        self.player = player
+        self.player_hand = player_hand
+        self.dealer_hand = dealer_hand
+        self.game_cog = game_cog
+        self.done = False
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.player.id:
+            await interaction.response.send_message("❌ This isn't your hand!", ephemeral=True)
+            return False
+        return True
+
+    def build_embed(self, reveal_dealer: bool, result: Optional[str] = None) -> discord.Embed:
+        embed = discord.Embed(title="🃏 Blackjack", color=0x2ECC71)
+        embed.add_field(
+            name=f"Your Hand ({self.game_cog._hand_value(self.player_hand)})",
+            value=self.game_cog._hand_str(self.player_hand),
+            inline=False,
+        )
+        if reveal_dealer:
+            embed.add_field(
+                name=f"Dealer's Hand ({self.game_cog._hand_value(self.dealer_hand)})",
+                value=self.game_cog._hand_str(self.dealer_hand),
+                inline=False,
+            )
+        else:
+            shown = self.dealer_hand[0]
+            embed.add_field(
+                name="Dealer's Hand",
+                value=f"{shown[0]}{shown[1]} 🂠",
+                inline=False,
+            )
+        if result:
+            embed.add_field(name="Result", value=result, inline=False)
+        embed.set_thumbnail(url=str(self.player.display_avatar.url))
+        embed.timestamp = discord.utils.utcnow()
+        return embed
+
+    async def _end_game(self) -> None:
+        self.done = True
+        self.stop()
+        cache_set(f"blackjack:{self.player.id}", None)
+        for item in self.children:
+            item.disabled = True
+
+    @discord.ui.button(label="Hit", style=discord.ButtonStyle.primary, emoji="🃏")
+    async def hit(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        self.player_hand.append(self.game_cog._draw_card())
+        value = self.game_cog._hand_value(self.player_hand)
+
+        if value > 21:
+            await self._end_game()
+            embed = self.build_embed(reveal_dealer=True, result="💥 Bust! You lose.")
+            await interaction.response.edit_message(embed=embed, view=self)
+            return
+
+        await interaction.response.edit_message(embed=self.build_embed(reveal_dealer=False), view=self)
+
+    @discord.ui.button(label="Stand", style=discord.ButtonStyle.secondary, emoji="✋")
+    async def stand(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        while self.game_cog._hand_value(self.dealer_hand) < 17:
+            self.dealer_hand.append(self.game_cog._draw_card())
+
+        await self.finish(interaction)
+
+    async def finish(self, interaction: discord.Interaction, natural: bool = False) -> None:
+        player_val = self.game_cog._hand_value(self.player_hand)
+        dealer_val = self.game_cog._hand_value(self.dealer_hand)
+        dealer_natural = natural and dealer_val == 21
+
+        if natural and not dealer_natural:
+            result = "🎉 Blackjack! You win big!"
+            xp = 40
+        elif natural and dealer_natural:
+            result = "🤝 Both have Blackjack -- push!"
+            xp = 0
+        elif dealer_val > 21:
+            result = "🎉 Dealer busts! You win!"
+            xp = 25
+        elif player_val > dealer_val:
+            result = "🎉 You win!"
+            xp = 25
+        elif player_val == dealer_val:
+            result = "🤝 Push -- it's a tie!"
+            xp = 0
+        else:
+            result = "😢 Dealer wins."
+            xp = 0
+
+        if xp > 0:
+            await self.game_cog.user_repo.add_xp(self.player.id, xp)
+            result += f"\n🎁 +{xp} XP"
+
+        await self._end_game()
+        embed = self.build_embed(reveal_dealer=True, result=result)
+
+        if interaction.response.is_done():
+            await interaction.followup.send(embed=embed, view=self)
+        else:
+            await interaction.response.edit_message(embed=embed, view=self)
+
+
+class TicTacToeChallengeView(discord.ui.View):
+    """View for accepting a Tic-Tac-Toe challenge."""
+
+    def __init__(self, challenger: discord.User, opponent: discord.User, game_cog: "GamesCog"):
+        super().__init__(timeout=60.0)
+        self.challenger = challenger
+        self.opponent = opponent
+        self.game_cog = game_cog
+
+    @discord.ui.button(label="Accept Challenge ⭕", style=discord.ButtonStyle.success)
+    async def accept(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if interaction.user.id != self.opponent.id:
+            await interaction.response.send_message("❌ Only the challenged player can accept!", ephemeral=True)
+            return
+
+        self.stop()
+        game_view = TicTacToeView(self.challenger, self.opponent, self.game_cog)
+        embed = game_view.build_embed()
+        await interaction.response.edit_message(embed=embed, view=game_view)
+
+    @discord.ui.button(label="Decline ❌", style=discord.ButtonStyle.danger)
+    async def decline(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if interaction.user.id != self.opponent.id:
+            await interaction.response.send_message("❌ Only the challenged player can decline!", ephemeral=True)
+            return
+
+        self.stop()
+        embed = discord.Embed(
+            title="❌ Challenge Declined",
+            description=f"{self.opponent.mention} declined the challenge.",
+            color=0xE74C3C,
+        )
+        await interaction.response.edit_message(embed=embed, view=None)
+
+
+class TicTacToeButton(discord.ui.Button):
+    def __init__(self, position: int):
+        super().__init__(style=discord.ButtonStyle.secondary, label="\u200b", row=position // 3)
+        self.position = position
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        await self.view.handle_move(interaction, self)
+
+
+class TicTacToeView(discord.ui.View):
+    """3x3 grid Tic-Tac-Toe. Challenger is X and moves first."""
+
+    WIN_LINES = [
+        (0, 1, 2), (3, 4, 5), (6, 7, 8),
+        (0, 3, 6), (1, 4, 7), (2, 5, 8),
+        (0, 4, 8), (2, 4, 6),
+    ]
+
+    def __init__(self, player_x: discord.User, player_o: discord.User, game_cog: "GamesCog"):
+        super().__init__(timeout=120.0)
+        self.player_x = player_x
+        self.player_o = player_o
+        self.game_cog = game_cog
+        self.board: list[Optional[str]] = [None] * 9
+        self.turn = "X"
+        for i in range(9):
+            self.add_item(TicTacToeButton(i))
+
+    @property
+    def current_player(self) -> discord.User:
+        return self.player_x if self.turn == "X" else self.player_o
+
+    def build_embed(self, result: Optional[str] = None) -> discord.Embed:
+        embed = discord.Embed(title="⭕ Tic-Tac-Toe", color=0x1ABC9C)
+        embed.description = f"{self.player_x.mention} (X) vs {self.player_o.mention} (O)"
+        if result:
+            embed.add_field(name="Result", value=result, inline=False)
+        else:
+            embed.add_field(name="Turn", value=f"{self.current_player.mention}'s move ({self.turn})", inline=False)
+        embed.timestamp = discord.utils.utcnow()
+        return embed
+
+    def _winner(self) -> Optional[str]:
+        for a, b, c in self.WIN_LINES:
+            if self.board[a] and self.board[a] == self.board[b] == self.board[c]:
+                return self.board[a]
+        return None
+
+    async def handle_move(self, interaction: discord.Interaction, button: TicTacToeButton) -> None:
+        if interaction.user.id != self.current_player.id:
+            await interaction.response.send_message("❌ It's not your turn!", ephemeral=True)
+            return
+
+        if self.board[button.position] is not None:
+            await interaction.response.send_message("❌ That square is taken!", ephemeral=True)
+            return
+
+        self.board[button.position] = self.turn
+        button.label = self.turn
+        button.style = discord.ButtonStyle.danger if self.turn == "X" else discord.ButtonStyle.primary
+        button.disabled = True
+
+        winner = self._winner()
+        full = all(cell is not None for cell in self.board)
+
+        if winner or full:
+            for item in self.children:
+                item.disabled = True
+            self.stop()
+
+            if winner:
+                winning_user = self.player_x if winner == "X" else self.player_o
+                await self.game_cog.user_repo.add_xp(winning_user.id, 20)
+                result = f"🎉 {winning_user.mention} wins! +20 XP"
+            else:
+                result = "🤝 It's a draw!"
+
+            embed = self.build_embed(result=result)
+            await interaction.response.edit_message(embed=embed, view=self)
+            return
+
+        self.turn = "O" if self.turn == "X" else "X"
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
+
+
+class HeistView(discord.ui.View):
+    """Crazy multiplayer minigame: rally a crew within the join window,
+    then the whole channel finds out together whether the job paid off."""
+
+    def __init__(self, host: discord.User, game_cog: "GamesCog"):
+        super().__init__(timeout=25.0)
+        self.host = host
+        self.game_cog = game_cog
+        self.participants: dict[int, discord.User] = {host.id: host}
+        self.message: Optional[discord.Message] = None
+        self.resolved = False
+
+    def build_lobby_embed(self) -> discord.Embed:
+        embed = discord.Embed(
+            title="🏦 Crew Heist -- Forming Up!",
+            description=(
+                f"{self.host.mention} is putting together a crew for one last job.\n"
+                f"Hit **Join the Crew** in the next **20 seconds**!"
+            ),
+            color=0xF39C12,
+        )
+        crew_list = "\n".join(f"• {u.mention}" for u in self.participants.values())
+        embed.add_field(name=f"Crew ({len(self.participants)})", value=crew_list, inline=False)
+        odds = min(85, 30 + 8 * len(self.participants))
+        embed.add_field(name="Estimated Odds", value=f"{odds}% chance of a clean getaway", inline=False)
+        embed.set_footer(text="Bigger crews hit harder, but everyone shares the risk.")
+        return embed
+
+    @discord.ui.button(label="Join the Crew 🕶️", style=discord.ButtonStyle.success)
+    async def join(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        if self.resolved:
+            await interaction.response.send_message("🚔 This job already went down!", ephemeral=True)
+            return
+
+        if interaction.user.id in self.participants:
+            await interaction.response.send_message("✅ You're already in the crew!", ephemeral=True)
+            return
+
+        await self.game_cog.user_repo.get_or_create(
+            interaction.user.id,
+            interaction.user.display_name,
+            str(interaction.user.display_avatar.url),
+        )
+
+        self.participants[interaction.user.id] = interaction.user
+        await interaction.response.edit_message(embed=self.build_lobby_embed(), view=self)
+
+    async def resolve(self) -> None:
+        if self.resolved or self.message is None:
+            return
+        self.resolved = True
+        self.stop()
+        for item in self.children:
+            item.disabled = True
+
+        crew = list(self.participants.values())
+        odds = min(85, 30 + 8 * len(crew))
+        success = random.randint(1, 100) <= odds
+
+        if success:
+            payouts = {u.id: random.randint(20, 60) for u in crew}
+            for uid, xp in payouts.items():
+                await self.game_cog.user_repo.add_xp(uid, xp)
+            lines = "\n".join(f"• {u.mention} walks away with **+{payouts[u.id]} XP**" for u in crew)
+            embed = discord.Embed(
+                title="💰 The Heist Paid Off!",
+                description=f"The crew pulled it off clean. Payout time:\n\n{lines}",
+                color=0x2ECC71,
+            )
+        else:
+            names = ", ".join(u.mention for u in crew)
+            embed = discord.Embed(
+                title="🚨 BUSTED!",
+                description=(
+                    f"Sirens everywhere. The whole crew got pinched: {names}\n"
+                    f"No XP this time -- maybe lay low for a bit."
+                ),
+                color=0xE74C3C,
+            )
+
+        embed.set_footer(text=f"Crew size: {len(crew)} | Odds were {odds}%")
+        embed.timestamp = discord.utils.utcnow()
+        await self.message.edit(embed=embed, view=self)
 
 
 async def setup(bot: commands.Bot) -> None:

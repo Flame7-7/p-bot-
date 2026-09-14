@@ -63,6 +63,22 @@ class NoFapRepository:
             await session.refresh(streak)
             return streak, False
 
+    async def set_partner(self, user_id: int, partner_id: int | None) -> NoFapStreak:
+        """Set (or clear, with partner_id=None) the accountability partner
+        who gets notified when this user resets their streak."""
+        async with get_session() as session:
+            r = await session.execute(
+                select(NoFapStreak).where(NoFapStreak.user_id == user_id)
+            )
+            streak = r.scalar_one_or_none()
+            if streak is None:
+                streak = NoFapStreak(user_id=user_id)
+                session.add(streak)
+            streak.partner_id = partner_id
+            await session.flush()
+            await session.refresh(streak)
+            return streak
+
     async def reset(self, user_id: int) -> NoFapStreak | None:
         """Record a relapse: bank the finished streak's length into
         `best_streak_days` if it's a new record, bump `reset_count`, and

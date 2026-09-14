@@ -56,10 +56,28 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
             raise
 
 
+async def _migrate_nofap_partner_column(conn) -> None:
+    """Lightweight self-healing migration: `create_all` only creates missing
+    tables, it never alters existing ones. Bots deployed before the
+    `partner_id` column existed need it added in place, or every nofap
+    read/write will fail with 'no such column'."""
+
+    def _add_column_if_missing(sync_conn) -> None:
+        from sqlalchemy import text
+
+        cols = [row[1] for row in sync_conn.exec_driver_sql("PRAGMA table_info(nofap_streaks)").fetchall()]
+        if cols and "partner_id" not in cols:
+            sync_conn.exec_driver_sql("ALTER TABLE nofap_streaks ADD COLUMN partner_id INTEGER")
+            logger.info("migrated nofap_streaks: added partner_id column")
+
+    await conn.run_sync(_add_column_if_missing)
+
+
 async def init_db() -> None:
     engine = get_engine()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        await _migrate_nofap_partner_column(conn)
     logger.info("database initialised: %s", get_config().db_path)
 
 

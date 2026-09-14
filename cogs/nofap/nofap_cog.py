@@ -31,6 +31,31 @@ def _encouragement(days: int) -> str:
     return "Incredible discipline. You're an inspiration! 🌟"
 
 
+async def _notify_partner(
+    client: discord.Client, user: discord.abc.User, streak: NoFapStreak | None, finished_days: int
+) -> None:
+    """Best-effort DM to the user's accountability partner when a streak
+    resets. Never raises -- a closed DM or missing partner just means no
+    notification goes out, it shouldn't break the reset flow itself."""
+    if streak is None or streak.partner_id is None:
+        return
+    try:
+        partner = client.get_user(streak.partner_id) or await client.fetch_user(streak.partner_id)
+        embed = discord.Embed(
+            title="🔔 Accountability Check-in",
+            description=(
+                f"{user.mention} just reset their no-fap streak "
+                f"(they'd made it **{finished_days}** day{'s' if finished_days != 1 else ''})."
+            ),
+            color=NOFAP_COLOR,
+        )
+        embed.set_footer(text="You're set as their accountability partner. A little support goes a long way.")
+        embed.timestamp = discord.utils.utcnow()
+        await partner.send(embed=embed)
+    except (discord.Forbidden, discord.HTTPException, discord.NotFound):
+        logger.info("nofap partner notify failed: partner_id=%s (DMs closed or unreachable)", streak.partner_id)
+
+
 def build_status_embed(user: discord.abc.User, streak: NoFapStreak | None) -> discord.Embed:
     days = current_streak_days(streak)
     embed = discord.Embed(title="🔥 No-Fap Streak", color=NOFAP_COLOR)
@@ -88,12 +113,14 @@ class ResetConfirmView(DiscordUIV2View):
 
     @button(label="Confirm relapse", style=discord.ButtonStyle.danger, custom_id="nofap_confirm")
     async def confirm(self, interaction: discord.Interaction, button: Button) -> None:
+        finished_days = current_streak_days(await self.repo.get(self.user_id))
         streak = await self.repo.reset(self.user_id)
         self.stop()
         embed = build_status_embed(interaction.user, streak)
         embed.title = "🔁 Streak Reset"
         embed.description = "No worries -- tomorrow's a fresh start. Your new streak begins now."
         await interaction.response.edit_message(embed=embed, view=None)
+        await _notify_partner(interaction.client, interaction.user, streak, finished_days)
 
     @button(label="Cancel", style=discord.ButtonStyle.secondary, custom_id="nofap_cancel")
     async def cancel(self, interaction: discord.Interaction, button: Button) -> None:
@@ -142,6 +169,39 @@ class NoFapCog(commands.Cog, name="No-Fap"):
     async def stats(self, interaction: discord.Interaction) -> None:
         streak = await self.repo.get(interaction.user.id)
         await interaction.response.send_message(embed=build_stats_embed(interaction.user, streak))
+
+    @nofap_group.command(name="partner", description="Set who gets notified when you reset your streak")
+    @app_commands.describe(user="The accountability partner to notify (omit to clear)")
+    async def partner(
+        self, interaction: discord.Interaction, user: discord.User | None = None
+    ) -> None:
+        if user is not None and user.id == interaction.user.id:
+            await interaction.response.send_message(
+                "❌ You can't set yourself as your own accountability partner.",
+                ephemeral=True,
+            )
+            return
+
+        if user is not None and user.bot:
+            await interaction.response.send_message(
+                "❌ You can't set a bot as your accountability partner.",
+                ephemeral=True,
+            )
+            return
+
+        await self.repo.set_partner(interaction.user.id, user.id if user else None)
+
+        if user is None:
+            await interaction.response.send_message(
+                "✅ Accountability partner cleared -- no one will be notified on reset.",
+                ephemeral=True,
+            )
+        else:
+            await interaction.response.send_message(
+                f"✅ {user.mention} is now your accountability partner. "
+                f"They'll get a DM if you reset your streak.",
+                ephemeral=True,
+            )
 
     @nofap_group.command(name="reset", description="Record a relapse and start a new streak")
     async def reset(self, interaction: discord.Interaction) -> None:

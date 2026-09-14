@@ -38,6 +38,7 @@ class RoleplayBot(commands.Bot):
     def __init__(self) -> None:
         intents = discord.Intents.default()
         intents.members = True
+        intents.message_content = True  # required: trivia/guess games read msg.content via wait_for
         super().__init__(
             command_prefix=commands.when_mentioned,
             intents=intents,

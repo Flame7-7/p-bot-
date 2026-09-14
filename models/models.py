@@ -241,5 +241,6 @@ class NoFapStreak(Base):
     reset_count: Mapped[int] = mapped_column(Integer, default=0)
     best_streak_days: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    partner_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     __table_args__ = (Index("ix_nofap_streaks_user", "user_id"),)
