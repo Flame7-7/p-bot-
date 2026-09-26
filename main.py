@@ -28,6 +28,8 @@ COGS = [
     "cogs.nofap.nofap_cog",
     "cogs.settings.settings_cog",
     "cogs.moderation.moderation_cog",
+    "cogs.dmlink.dmlink_cog",
+    "cogs.persona.persona_cog",
     "cogs.owner.owner_cog",
     "cogs.owner.help_cog",
     "cogs.owner.tasks_cog",

@@ -191,6 +191,22 @@ class RoleplayProfile(Base):
     __table_args__ = (Index("ix_roleplay_profiles_user", "user_id"),)
 
 
+class PersonaProfile(Base):
+    """A user's texting-style description, used to generate auto-replies
+    in their voice when AFK mode is on (see cogs/persona, cogs/dmlink)."""
+
+    __tablename__ = "persona_profiles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, unique=True)
+    persona_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    afk_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    label_replies: Mapped[bool] = mapped_column(Boolean, default=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (Index("ix_persona_profiles_user", "user_id"),)
+
+
 class CustomCommand(Base):
     """Guild-scoped, database-backed user/admin-created slash command."""
 
