@@ -12,10 +12,7 @@ class PersonaModal(discord.ui.Modal, title="Set your persona"):
     text: discord.ui.TextInput = discord.ui.TextInput(
         label="How do you talk? Who are you?",
         style=discord.TextStyle.paragraph,
-        placeholder=(
-            "e.g. casual, lowercase, lots of 'lol' and 'fr', calls her babe, "
-            "into gym & coding, teases her when she's late replying..."
-        ),
+        placeholder="e.g. casual, lowercase, lots of 'lol', calls her babe...",
         max_length=1500,
         required=True,
     )
