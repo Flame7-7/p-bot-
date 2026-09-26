@@ -11,7 +11,7 @@ GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 # Free-tier Groq model. Fast and good enough for short in-voice texts.
 # Swap for "llama-3.1-8b-instant" if you want even faster/cheaper replies,
 # or check https://console.groq.com/docs/models for current free models.
-MODEL = "llama-3.3-70b-versatile"
+MODEL = "openai/gpt-oss-120b"
 
 
 async def generate_persona_reply(
