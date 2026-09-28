@@ -73,11 +73,24 @@ async def _migrate_nofap_partner_column(conn) -> None:
     await conn.run_sync(_add_column_if_missing)
 
 
+async def _migrate_persona_auto_afk_column(conn) -> None:
+    """Adds persona_profiles.auto_afk to databases created before it existed."""
+
+    def _add_column_if_missing(sync_conn) -> None:
+        cols = [row[1] for row in sync_conn.exec_driver_sql("PRAGMA table_info(persona_profiles)").fetchall()]
+        if cols and "auto_afk" not in cols:
+            sync_conn.exec_driver_sql("ALTER TABLE persona_profiles ADD COLUMN auto_afk BOOLEAN DEFAULT 1")
+            logger.info("migrated persona_profiles: added auto_afk column")
+
+    await conn.run_sync(_add_column_if_missing)
+
+
 async def init_db() -> None:
     engine = get_engine()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         await _migrate_nofap_partner_column(conn)
+        await _migrate_persona_auto_afk_column(conn)
     logger.info("database initialised: %s", get_config().db_path)
 
 
