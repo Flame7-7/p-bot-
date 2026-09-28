@@ -40,3 +40,10 @@ class PersonaRepository:
             p.label_replies = visible
             await session.flush()
             return p
+
+    async def set_auto_afk(self, user_id: int, enabled: bool) -> PersonaProfile:
+        async with get_session() as session:
+            p = await self._get_or_create(session, user_id)
+            p.auto_afk = enabled
+            await session.flush()
+            return p

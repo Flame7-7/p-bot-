@@ -90,6 +90,14 @@ class PersonaCog(commands.Cog):
         state = "shown" if visible else "hidden"
         await interaction.response.send_message(f"Auto-reply tag will now be **{state}**.", ephemeral=True)
 
+    @afk_group.command(name="auto", description="Auto-enable AFK mode when your Discord status goes offline/invisible")
+    @app_commands.describe(enabled="On by default — turn off if you'd rather flip /afk manually")
+    async def afk_auto(self, interaction: discord.Interaction, enabled: bool) -> None:
+        await self.persona_repo.set_auto_afk(interaction.user.id, enabled)
+        await interaction.response.send_message(
+            f"Auto-AFK on offline/invisible is now **{'on' if enabled else 'off'}**.", ephemeral=True
+        )
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(PersonaCog(bot))

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections import defaultdict, deque
 
 import discord
@@ -14,15 +15,26 @@ logger = get_logger(__name__)
 
 HISTORY_LEN = 8  # in-memory turns of context per pair; resets on restart
 
+# A bare link to a gif/video (Tenor, Giphy, or a direct media URL) gets sent
+# as plain message content instead of inside our embed, so Discord unfurls
+# and plays it — embeds don't autoplay arbitrary video, and a link buried in
+# an embed's description never unfurls at all.
+MEDIA_LINK_RE = re.compile(
+    r"https?://\S+\.(?:gif|png|jpe?g|webp|mp4|webm|mov)(?:\?\S*)?|"
+    r"https?://(?:www\.)?(?:tenor\.com|giphy\.com|media\.giphy\.com)/\S+",
+    re.IGNORECASE,
+)
+
 
 class DMLinkCog(commands.Cog):
     """Bridges bot-DMs between two linked partners (see /partner, /propose).
 
     If either partner DMs the bot and they have an active relationship, the
-    message is relayed to the other partner's DMs. If the recipient has
-    turned AFK mode on (see cogs/persona), the bot generates a reply in
-    their voice instead of leaving the sender hanging, and separately DMs
-    the recipient a copy of what was said and what the bot answered.
+    message is relayed to the other partner's DMs — text, gifs, images and
+    videos alike. If the recipient has turned AFK mode on (see cogs/persona),
+    the bot generates a reply in their voice instead of leaving the sender
+    hanging, and separately DMs the recipient a copy of what was said and
+    what the bot answered.
     """
 
     def __init__(self, bot: commands.Bot) -> None:
@@ -42,7 +54,7 @@ class DMLinkCog(commands.Cog):
             return  # only bridges DMs between people linked via /partner
 
         content = message.content.strip()
-        attachments = [a.url for a in message.attachments]
+        attachments = message.attachments
         if not content and not attachments:
             return
 
@@ -73,7 +85,9 @@ class DMLinkCog(commands.Cog):
 
         recipient_user = await self._resolve(recipient_id)
         if recipient_user:
-            await self._deliver(speaker=sender, target=recipient_user, text=content, attachments=attachments, auto=False)
+            await self._deliver(
+                speaker=sender, target=recipient_user, text=content, attachments=attachments, auto=False
+            )
 
     async def _resolve(self, user_id: int) -> discord.User | None:
         user = self.bot.get_user(user_id)
@@ -91,19 +105,30 @@ class DMLinkCog(commands.Cog):
         target: discord.abc.User,
         text: str,
         auto: bool,
-        attachments: list[str] | None = None,
+        attachments: list[discord.Attachment] | None = None,
         label: bool = True,
     ) -> None:
-        embed = discord.Embed(description=text or None, color=0xFF6FA5)
-        embed.set_author(name=speaker.display_name, icon_url=speaker.display_avatar.url)
-        if auto and label:
-            embed.set_footer(text=f"🤖 Auto-reply from {speaker.display_name} — they're away right now")
-        if attachments:
-            embed.set_image(url=attachments[0])
-            if len(attachments) > 1:
-                embed.add_field(name="More attachments", value="\n".join(attachments[1:]))
+        prefix = f"**{speaker.display_name}{' (auto-reply, away)' if auto and label else ''}:** "
 
         try:
+            if attachments:
+                # Re-upload the real files so Discord renders/plays gifs,
+                # images and videos natively in the recipient's DM.
+                files = [await a.to_file() for a in attachments]
+                await target.send(content=(prefix + text) if text else prefix.rstrip(": "), files=files)
+                return
+
+            if text and MEDIA_LINK_RE.search(text):
+                # A pasted gif/video link — send as plain content so
+                # Discord unfurls it, rather than burying it in an embed
+                # description where it would never preview.
+                await target.send(content=prefix + text)
+                return
+
+            embed = discord.Embed(description=text or None, color=0xFF6FA5)
+            embed.set_author(name=speaker.display_name, icon_url=speaker.display_avatar.url)
+            if auto and label:
+                embed.set_footer(text=f"🤖 Auto-reply from {speaker.display_name} — they're away right now")
             await target.send(embed=embed)
         except discord.Forbidden:
             logger.info("could not DM %s (%s) — DMs closed", target, target.id)
@@ -113,7 +138,7 @@ class DMLinkCog(commands.Cog):
         owner: discord.abc.User,
         sender: discord.abc.User,
         incoming: str,
-        attachments: list[str],
+        attachments: list[discord.Attachment],
         reply: str,
     ) -> None:
         """Keep the AFK partner in the loop on what was said on their behalf."""

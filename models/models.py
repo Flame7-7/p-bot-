@@ -201,6 +201,7 @@ class PersonaProfile(Base):
     user_id: Mapped[int] = mapped_column(Integer, unique=True)
     persona_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     afk_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    auto_afk: Mapped[bool] = mapped_column(Boolean, default=True)
     label_replies: Mapped[bool] = mapped_column(Boolean, default=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 

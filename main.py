@@ -30,6 +30,8 @@ COGS = [
     "cogs.moderation.moderation_cog",
     "cogs.dmlink.dmlink_cog",
     "cogs.persona.persona_cog",
+    "cogs.presence.presence_cog",
+    "cogs.dmgames.dmgames_cog",
     "cogs.owner.owner_cog",
     "cogs.owner.help_cog",
     "cogs.owner.tasks_cog",
@@ -40,6 +42,7 @@ class RoleplayBot(commands.Bot):
     def __init__(self) -> None:
         intents = discord.Intents.default()
         intents.members = True
+        intents.presences = True  # needed for auto-AFK on offline/invisible (see cogs/presence)
         intents.message_content = True  # required: trivia/guess games read msg.content via wait_for
         super().__init__(
             command_prefix=commands.when_mentioned,
