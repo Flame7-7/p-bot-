@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 import discord
 from discord.ext import commands
 
@@ -8,52 +10,67 @@ from utils.logging import get_logger
 
 logger = get_logger(__name__)
 
-AWAY_STATUSES = (discord.Status.offline,)  # Discord reports "invisible" as offline to bots too
+OFFLINE_DELAY = 120  # seconds offline before AFK turns on (ignores brief flicker)
 
 
 class PresenceCog(commands.Cog):
-    """Auto-flips AFK mode on/off based on the user's Discord status, for
-    anyone with auto_afk left on (the default — see /afk auto).
+    """Silently flips AFK mode on when the user has been offline/invisible
+    for OFFLINE_DELAY seconds, and off again when they come back. No DMs.
 
-    Requires the Presence Intent enabled both in code (main.py) and in the
-    Discord Developer Portal for this bot application, and only fires for
-    servers the bot and the user share (Discord doesn't expose presence
-    outside of mutual guilds).
+    Needs the Presence Intent (code + Developer Portal). Auto-AFK is only
+    switched off on return if this cog was the one that switched it on, so a
+    manual /afk on isn't cancelled by a status change.
     """
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.persona_repo = PersonaRepository()
+        self._pending: dict[int, asyncio.Task] = {}
+        self._auto_on: set[int] = set()
+
+    def cog_unload(self) -> None:
+        for t in self._pending.values():
+            t.cancel()
 
     @commands.Cog.listener()
     async def on_presence_update(self, before: discord.Member, after: discord.Member) -> None:
         if before.status == after.status:
             return
 
-        profile = await self.persona_repo.get(after.id)
-        if not profile or not profile.auto_afk or not profile.persona_text:
+        uid = after.id
+        if after.status == discord.Status.offline:
+            if uid in self._pending:  # already counting down (multi-guild duplicates)
+                return
+            self._pending[uid] = asyncio.create_task(self._go_afk_later(after))
             return
 
-        is_away = after.status in AWAY_STATUSES
+        # back online (online / idle / dnd)
+        task = self._pending.pop(uid, None)
+        if task:
+            task.cancel()
+        if uid in self._auto_on:
+            self._auto_on.discard(uid)
+            await self.persona_repo.set_afk(uid, False)
 
-        if is_away and not profile.afk_enabled:
-            await self.persona_repo.set_afk(after.id, True)
-            await self._notify(after, True)
-        elif not is_away and profile.afk_enabled:
-            await self.persona_repo.set_afk(after.id, False)
-            await self._notify(after, False)
-
-    async def _notify(self, member: discord.Member, enabled: bool) -> None:
+    async def _go_afk_later(self, member: discord.Member) -> None:
+        uid = member.id
         try:
-            if enabled:
-                await member.send(
-                    "🤖 Went offline, so AFK auto-reply just turned **on** for your partner's DMs. "
-                    "`/afk auto off` if you don't want this."
-                )
-            else:
-                await member.send("👋 Welcome back — AFK auto-reply turned **off**, you're answering yourself again.")
-        except discord.Forbidden:
-            pass
+            await asyncio.sleep(OFFLINE_DELAY)
+            current = member.guild.get_member(uid)
+            if current is None or current.status != discord.Status.offline:
+                return
+            profile = await self.persona_repo.get(uid)
+            if not profile or not profile.auto_afk or not profile.persona_text or profile.afk_enabled:
+                return
+            await self.persona_repo.set_afk(uid, True)
+            self._auto_on.add(uid)
+            logger.info("auto-AFK on for %s", uid)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception("auto-AFK failed")
+        finally:
+            self._pending.pop(uid, None)
 
 
 async def setup(bot: commands.Bot) -> None:
