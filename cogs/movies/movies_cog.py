@@ -4,6 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from services.dm_mirror import mirror_to_partner
 from services.movie_service import GENRES, MovieService
 from utils.logging import get_logger
 
@@ -72,6 +73,14 @@ class MoviesCog(commands.Cog, name="Movies"):
             return
 
         await interaction.followup.send(embed=build_movie_embed(movie, genre_value))
+
+        # In a DM, send your partner the same pick so movie night is a
+        # joint decision instead of just showing up on one side.
+        await mirror_to_partner(
+            interaction,
+            content=f"🎬 **{interaction.user.display_name}** found a movie night pick:",
+            embed=build_movie_embed(movie, genre_value),
+        )
 
 
 async def setup(bot: commands.Bot) -> None:

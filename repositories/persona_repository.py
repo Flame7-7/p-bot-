@@ -47,3 +47,8 @@ class PersonaRepository:
             p.auto_afk = enabled
             await session.flush()
             return p
+
+    async def list_auto_afk_enabled(self) -> list[PersonaProfile]:
+        async with get_session() as session:
+            r = await session.execute(select(PersonaProfile).where(PersonaProfile.auto_afk.is_(True)))
+            return list(r.scalars().all())

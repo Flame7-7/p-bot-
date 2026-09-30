@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import io
+
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -407,6 +409,32 @@ class HelpCog(commands.Cog, name="Help"):
         pages.append(_footer(admin_embed))
 
         await interaction.response.send_message(embed=pages[0], view=PaginatedView(pages))
+
+    @app_commands.command(
+        name="commandlist",
+        description="Download a markdown reference of roleplay commands, grouped by category",
+    )
+    async def commandlist(self, interaction: discord.Interaction) -> None:
+        lines = ["# Roleplay Commands\n"]
+        for key, (label, emoji, _color) in CATEGORY_INFO.items():
+            actions = get_by_category(key)
+            if not actions:
+                continue
+            lines.append(f"## {emoji} {label}\n")
+            for action in sorted(actions, key=lambda a: a.name):
+                desc = action.description or "No description"
+                lines.append(f"- **/{action.name}** — {desc}")
+            lines.append("")
+        lines.append(
+            "*In a server: `/<command> target:@someone`. In your bot DM, just `/<command>` — "
+            "it auto-targets your linked partner (`/propose`).*"
+        )
+        markdown = "\n".join(lines)
+
+        file = discord.File(io.BytesIO(markdown.encode("utf-8")), filename="roleplay_commands.md")
+        await interaction.response.send_message(
+            "📖 Every roleplay command, grouped by category:", file=file, ephemeral=True
+        )
 
 
 async def setup(bot: commands.Bot) -> None:
