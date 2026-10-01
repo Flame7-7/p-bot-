@@ -11,6 +11,8 @@ ITEMS_PER_PAGE = 6
 
 
 class AchievementsCog(commands.Cog, name="Achievements"):
+    help_category = ("🏆", "Achievements")
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.repo = AchievementRepository()

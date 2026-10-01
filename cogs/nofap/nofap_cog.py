@@ -134,6 +134,8 @@ class NoFapCog(commands.Cog, name="No-Fap"):
     """Personal streak tracking. Fully separate from the roleplay/consent
     system -- purely a self-improvement tool."""
 
+    help_category = ("🌱", "Habits")
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.repo = NoFapRepository()

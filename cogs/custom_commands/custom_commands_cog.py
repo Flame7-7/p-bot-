@@ -6,7 +6,6 @@ from discord.ext import commands
 
 from repositories.custom_command_repository import CustomCommandRepository
 from services.custom_command_service import (
-    COMMAND_NAME_RE,
     validate_name,
     validate_response,
     render_response,
@@ -39,6 +38,8 @@ async def _is_manager(interaction: discord.Interaction) -> bool:
 
 class CustomCommandsCog(commands.Cog, name="Custom Commands"):
     """Guild-scoped self-service slash commands backed by SQLite."""
+
+    help_category = ("🧩", "Custom")
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot

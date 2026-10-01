@@ -19,6 +19,8 @@ MEDALS = ["🥇", "🥈", "🥉"]
 
 
 class EconomyCog(commands.Cog, name="Economy"):
+    help_category = ("💰", "Economy")
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.user_repo = UserRepository()

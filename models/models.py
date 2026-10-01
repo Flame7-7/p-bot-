@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import (
-    BigInteger, Boolean, DateTime, Float, ForeignKey,
+    Boolean, DateTime, Float, ForeignKey,
     Index, Integer, String, Text, UniqueConstraint, func,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -193,7 +193,7 @@ class RoleplayProfile(Base):
 
 class PersonaProfile(Base):
     """A user's texting-style description, used to generate auto-replies
-    in their voice when AFK mode is on (see cogs/persona, cogs/dmlink)."""
+    in their voice when AFK mode is on (see cogs/persona)."""
 
     __tablename__ = "persona_profiles"
 
@@ -206,6 +206,70 @@ class PersonaProfile(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
     __table_args__ = (Index("ix_persona_profiles_user", "user_id"),)
+
+
+class PersonaChannel(Base):
+    """Per-guild persona setup: the one channel where persona replies happen."""
+
+    __tablename__ = "persona_channels"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    guild_id: Mapped[int] = mapped_column(Integer, unique=True)
+    channel_id: Mapped[int] = mapped_column(Integer)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    configured_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class CoupleGameStat(Base):
+    """Running score for a couple in one DM game. ``user_low_id`` < ``user_high_id``."""
+
+    __tablename__ = "couple_game_stats"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_low_id: Mapped[int] = mapped_column(Integer)
+    user_high_id: Mapped[int] = mapped_column(Integer)
+    game: Mapped[str] = mapped_column(String(40))
+    plays: Mapped[int] = mapped_column(Integer, default=0)
+    low_wins: Mapped[int] = mapped_column(Integer, default=0)
+    high_wins: Mapped[int] = mapped_column(Integer, default=0)
+    draws: Mapped[int] = mapped_column(Integer, default=0)
+    points: Mapped[int] = mapped_column(Integer, default=0)  # co-op score (match %, trivia, ...)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (UniqueConstraint("user_low_id", "user_high_id", "game", name="uq_couple_game"),)
+
+
+class CoupleMilestone(Base):
+    """A date a couple wants to remember or count down to."""
+
+    __tablename__ = "couple_milestones"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_low_id: Mapped[int] = mapped_column(Integer)
+    user_high_id: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(80))
+    event_date: Mapped[datetime] = mapped_column(DateTime)
+    yearly: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_by: Mapped[int] = mapped_column(Integer)
+
+    __table_args__ = (Index("ix_couple_milestones_pair", "user_low_id", "user_high_id"),)
+
+
+class JournalEntry(Base):
+    """A private shared-journal note, visible to the author's partner via /couple memories."""
+
+    __tablename__ = "couple_journal"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_low_id: Mapped[int] = mapped_column(Integer)
+    user_high_id: Mapped[int] = mapped_column(Integer)
+    author_id: Mapped[int] = mapped_column(Integer)
+    prompt: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    text: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    __table_args__ = (Index("ix_couple_journal_pair", "user_low_id", "user_high_id"),)
 
 
 class CustomCommand(Base):

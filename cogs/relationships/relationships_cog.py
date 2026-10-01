@@ -3,7 +3,7 @@ from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.ui import button, Button, View
+from discord.ui import button, Button
 
 from repositories.relationship_repository import RelationshipRepository
 from views.embeds import build_relationship_embed, DiscordUIV2View
@@ -53,6 +53,8 @@ class ProposalView(DiscordUIV2View):
 
 
 class RelationshipsCog(commands.Cog, name="Relationships"):
+    help_category = ("💕", "Couple")
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.repo = RelationshipRepository()

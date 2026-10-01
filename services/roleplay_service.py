@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import discord
 
@@ -9,7 +9,7 @@ from repositories.interaction_repository import InteractionRepository
 from repositories.relationship_repository import RelationshipRepository
 from repositories.roleplay_profile_repository import RoleplayProfileRepository
 from repositories.user_repository import UserRepository
-from services.action_registry import ActionConfig, get_action
+from services.action_registry import get_action
 from services.gif_service import GifService
 from utils.config import get_config
 from utils.cooldowns import check_cooldown, set_cooldown

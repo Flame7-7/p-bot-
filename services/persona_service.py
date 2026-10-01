@@ -1,59 +1,62 @@
 from __future__ import annotations
 
-from services.gif_service import get_http_session
+import aiohttp
+
 from utils.config import get_config
+from utils.content import load_text
+from utils.http import get_http_session
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=20)
 
-# Free-tier Groq model. Fast and good enough for short in-voice texts.
-# Swap for "llama-3.1-8b-instant" if you want even faster/cheaper replies,
-# or check https://console.groq.com/docs/models for current free models.
-MODEL = "openai/gpt-oss-120b"
+
+def build_system_prompt(persona_text: str, owner_name: str, speaker_name: str) -> str:
+    template = load_text("persona/system_prompt.md")
+    return (
+        template.replace("{owner}", owner_name)
+        .replace("{speaker}", speaker_name)
+        .replace("{persona}", persona_text.strip())
+    )
 
 
 async def generate_persona_reply(
-    persona_text: str, history: list[dict], incoming: str
+    persona_text: str,
+    history: list[dict[str, str]],
+    incoming: str,
+    *,
+    owner_name: str = "this person",
+    speaker_name: str = "someone",
 ) -> str | None:
-    """Generate a short reply in someone's own voice, based on a persona
-    description they wrote about themselves. Used to auto-reply to their
-    partner's DMs while they're marked AFK (see cogs/dmlink, cogs/persona).
+    """Generate a short reply in someone's own voice from the persona they wrote.
 
-    Returns None if no GROQ_API_KEY is configured or the call fails, so the
-    caller can fall back to relaying the raw message instead of silently
-    dropping it.
+    Returns None if no GROQ_API_KEY is configured or the call fails, so callers
+    can stay silent rather than post an error into a channel.
     """
-    api_key = get_config().groq_api_key
-    if not api_key:
+    config = get_config()
+    if not config.groq_api_key:
         return None
 
-    system = (
-        "You are helping someone auto-reply to a text from their partner "
-        "while they're briefly away from their phone. Write ONE short reply "
-        "in first person, in this person's own words and texting style, as "
-        "described below. Keep it brief and natural, like a real text "
-        "(usually 1-3 short sentences) — not a formal or robotic message.\n\n"
-        f"How this person talks, and anything else about them:\n{persona_text.strip()}"
-    )
-
-    messages = [{"role": "system", "content": system}, *history, {"role": "user", "content": incoming}]
-
-    session = get_http_session()
+    messages = [
+        {"role": "system", "content": build_system_prompt(persona_text, owner_name, speaker_name)},
+        *history,
+        {"role": "user", "content": incoming},
+    ]
     try:
-        async with session.post(
+        async with get_http_session().post(
             GROQ_URL,
-            headers={"Authorization": f"Bearer {api_key}"},
-            json={"model": MODEL, "messages": messages, "max_tokens": 300, "temperature": 0.9},
-            timeout=20,
+            headers={"Authorization": f"Bearer {config.groq_api_key}"},
+            json={"model": config.persona_model, "messages": messages, "max_tokens": 300, "temperature": 0.9},
+            timeout=REQUEST_TIMEOUT,
         ) as resp:
             if resp.status != 200:
-                logger.error("groq api error %s: %s", resp.status, await resp.text())
+                logger.error("groq api error %s", resp.status)  # body omitted: may echo prompt content
                 return None
             data = await resp.json()
-            text = data["choices"][0]["message"]["content"].strip()
-            return text or None
-    except Exception:
+            text = (data["choices"][0]["message"]["content"] or "").strip()
+            return text[:1900] or None
+    except (aiohttp.ClientError, TimeoutError, KeyError, IndexError, ValueError):
         logger.exception("persona reply generation failed")
         return None

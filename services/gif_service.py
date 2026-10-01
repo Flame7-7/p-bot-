@@ -1,39 +1,18 @@
 from __future__ import annotations
 
 import random
+
 import aiohttp
 
 from database.connection import get_session
 from models.models import GIF
-from utils.cooldowns import cache_get, cache_set
 from utils.config import get_config
+from utils.cooldowns import cache_get, cache_set
+from utils.http import get_http_session
 from utils.logging import get_logger
 from sqlalchemy import select
 
 logger = get_logger(__name__)
-
-# One shared session reused for every Tenor request for the life of the
-# process, instead of `async with aiohttp.ClientSession()` per call. The
-# old version wasn't technically leaking (the `async with` did close each
-# one), but spinning up a brand new TCP/TLS session for every single
-# fallback lookup is wasteful, especially on a low-RAM free host. Closed
-# once in main.py's close() via close_http_session().
-_http_session: aiohttp.ClientSession | None = None
-
-
-def get_http_session() -> aiohttp.ClientSession:
-    global _http_session
-    if _http_session is None or _http_session.closed:
-        _http_session = aiohttp.ClientSession()
-    return _http_session
-
-
-async def close_http_session() -> None:
-    global _http_session
-    if _http_session and not _http_session.closed:
-        await _http_session.close()
-    _http_session = None
-
 
 class GifService:
     def __init__(self) -> None:

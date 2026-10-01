@@ -1,0 +1,22 @@
+# This or that (A | B)
+
+- Tea | Coffee
+- Beach | Mountains
+- Sunrise | Sunset
+- Movies at home | Movies in a cinema
+- Sweet | Salty
+- Cats | Dogs
+- Call | Text
+- Rainy day | Sunny day
+- Pizza | Burgers
+- Road trip | Flight
+- Early bird | Night owl
+- Cuddles | Kisses
+- Pancakes | Waffles
+- Summer | Winter
+- Surprise | Plan
+- Photos | Videos
+- Cook | Order
+- Dance | Sing
+- Books | Series
+- Chocolate | Ice cream

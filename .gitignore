@@ -1,1 +1,24 @@
-Nothing should be ignored since only a Python source file (`cogs/owner/help_cog.py`) was modified and no build artifacts, dependencies, or temporary files were included in the changes.
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets / local config
+.env
+
+# Local databases
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite3
+
+# Logs / OS / editors
+*.log
+.DS_Store
+.idea/
+.vscode/

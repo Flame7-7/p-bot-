@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import aiohttp
 
-from services.gif_service import get_http_session
+from utils.http import get_http_session
 from utils.config import get_config
 from utils.cooldowns import cache_get, cache_set
 from utils.logging import get_logger

@@ -1,178 +1,187 @@
-# 🌸 Discord Roleplay Bot (Lite)
+# 💕 p-bot
 
-Zero-dependency-server Discord roleplay bot. Uses **SQLite** (file-based) and **in-memory** cooldowns — no PostgreSQL, no Redis, no Docker required.
+A private Discord bot for two: roleplay actions, couple games played in DMs, cute daily touches, relationship tracking, and an optional AI "persona" that answers for you in one server channel.
 
-Runs under **150MB RAM** and deploys to any free host.
-
----
-
-## ✨ Features
-
-- **32 Roleplay Commands** — hug, pat, kiss, cuddle, poke, boop, headpat, nuzzle, snuggle, tackle, slap, punch, kick, bite, lick, tickle, pounce, throw, cry, wave, blush, smile, wink, dance, laugh, sigh, highfive, fistbump, handshake, bow, stare, glare
-- **GIF support** — per-category DB storage + optional Tenor API fallback
-- **Relationship system** — `/propose`, `/partner`, `/breakup`, `/anniversary`
-- **Achievements** — 14 achievements, hidden/rare, XP rewards
-- **Leveling & XP** — every command gives XP + affection
-- **Daily rewards** — `/daily` with 7-day streak system
-- **Leaderboards** — affection, level, interactions (paginated)
-- **Profiles** — `/profile`, `/setbio`, `/stats`
-- **Interactive Settings** — toggle interactions & leaderboard visibility with buttons
-- **Moderation** — `/botban`, `/botunban`, `/resetuser`
-- **Help** — `/help` with paginated category browser
+Built on discord.py 2.x, SQLite (SQLAlchemy async) and in-memory cooldowns — no Redis, no Docker, runs happily on a free host.
 
 ---
 
-## 🚀 Setup (5 minutes)
-
-### 1. Install dependencies
+## Setup
 
 ```bash
 pip install -r requirements.txt
-```
-
-### 2. Configure
-
-```bash
-cp .env.example .env
-# Edit .env — fill in DISCORD_TOKEN and DISCORD_CLIENT_ID
-```
-
-### 3. Run
-
-```bash
+cp .env.example .env        # fill in DISCORD_TOKEN and DISCORD_CLIENT_ID
 python main.py
 ```
 
-The bot creates `bot.db` automatically on first run. No setup needed.
-
-### 4. Sync slash commands
-
-In Discord (bot owner only):
+The database (`bot.db`) is created and migrated automatically on start. Then, in Discord, as the bot owner:
 
 ```
 @YourBot sync
 ```
 
-Done. All 32 commands are live.
+**Required Discord settings** (Developer Portal → Bot → Privileged Gateway Intents): **Server Members**, **Presence**, **Message Content**.
+
+### Environment variables
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `DISCORD_TOKEN` | ✅ | Bot token |
+| `DISCORD_CLIENT_ID` | ✅ | Application ID (numeric) |
+| `DB_PATH` | | SQLite file, default `bot.db` |
+| `GROQ_API_KEY` | for persona | Free key from console.groq.com; without it `/afk on` explains it can't run |
+| `PERSONA_MODEL` | | Model for persona replies (default `openai/gpt-oss-120b`) |
+| `TENOR_API_KEY` | | Automatic GIF fallback |
+| `TMDB_API_KEY` | | `/movie recommend` |
+| `LEGACY_ROLEPLAY_COMMANDS` | | `true` also registers `/hug`, `/kiss`, … as separate commands (see below) |
+
+Missing required variables stop startup with a clear message instead of a traceback.
 
 ---
 
-## 🆓 Free Hosting
+## What it does
 
-### Railway (recommended)
-1. Push code to GitHub
-2. New Project → Deploy from GitHub
-3. Add env vars: `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`
-4. Deploy — no addons needed (SQLite is just a file)
+Run **`/help`** for the live list — it is generated from the commands actually registered, grouped by category, and only shows what *you* can use (owner/admin commands, guild-only commands, and age-restricted commands are hidden when they don't apply). Adding a cog with a `help_category = ("🎮", "Name")` attribute makes its commands show up automatically.
 
-### Discloud
-1. Zip the project folder
-2. Upload at discloud.app
-3. Set `DISCORD_TOKEN` and `DISCORD_CLIENT_ID` in the dashboard
+### 🎮 Couple games (in DMs)
 
-### Koyeb
-1. Push to GitHub
-2. New App → GitHub → select repo
-3. Set env vars, deploy
+`/play start <game>` sends the game to **both partners' DMs**. Requires a linked partner (`/propose`).
 
-> **Note:** On hosts that reset the filesystem on restart (some free tiers), the SQLite file will be wiped. If persistence matters, use Railway (persists files) or Discloud (persists files). Koyeb's free tier does persist the filesystem.
+| Game | | Game | |
+|---|---|---|---|
+| ⭕ Tic-Tac-Toe | `/ttt` | 🔍 Who Knows Who Better? | answer, then guess each other |
+| 🔴 Connect 4 | `/connect4` | 💝 Guess My Favourite | free-text, fuzzy matched |
+| ✂️ Rock Paper Scissors | best of 3, secret picks | 🧩 Trivia | higher score wins |
+| 🧠 Memory | emoji pairs | 😎 Emoji Guessing | decode first |
+| 🪢 Hangman | one sets a word | 🔤 Word Guessing | unscramble first |
+| 🔢 Number Guessing | find it together | 🃏 Higher or Lower | team streak |
+| 🎭 Truth or Dare | `/truthordare` | 🤍 Would You Rather | `/wyr` |
+| ⚡ This or That | | 🙋 Who's More Likely To… | |
+| 💘 Compatibility Quiz | match % | 🌙 Pick One for Tonight | tie-break included |
+
+`/play list` shows them in Discord, `/play quit` leaves the current game.
+
+**Guarantees** (all handled once, in `services/dm_games/session.py`): only the two players can press a game's buttons; each user can be in one game at a time; clicks are processed under a per-game lock; games expire after `game_idle_timeout` (30 min) of inactivity and buttons are disabled when a game ends, expires, is quit, or the bot shuts down; if a DM can't be delivered the game aborts cleanly; scores are kept per couple (`/couple stats`).
+
+### 💕 `/couple`
+
+`compliment`, `cutemessage`, `dateidea`, `challenge` (each with *Another* / *Send to partner* buttons), `mood` (tell your partner how you feel), `daily` (today's question — answers revealed together), `pickone`, `lovecalc`, `journal` + `memories` (shared journal), `milestone` / `countdown` / `unmilestone` (dates and anniversaries; also shows days together), `stats`.
+
+### 🎭 Roleplay
+
+One command instead of dozens:
+
+```
+/roleplay action:hug target:@her
+```
+
+Start typing in `action` for autocomplete; `/help` → Roleplay lists every action by category. In a DM with the bot, `target` defaults to your partner and the result is mirrored to them.
+
+`/intimate` holds the adults-only actions. It requires `/consent` and only works in DMs or age-restricted channels, and is hidden from `/help` elsewhere.
+
+Want the old per-action commands too? Set `LEGACY_ROLEPLAY_COMMANDS=true` — they are generated from the same content files. Mind Discord's 100 global command limit.
+
+### 💬 Persona (server channel only)
+
+Persona **no longer works in DMs.** It lives in one channel per server:
+
+1. A server admin (Manage Server) runs `/persona setup channel:#chat`. The bot checks it can view/send/embed/read history there and explains how it works.
+2. Each person runs `/persona set` (describe how you talk) and turns on `/afk on` when away (or leaves `/afk auto` on to follow your Discord status).
+3. In that channel, anyone who mentions or replies to an away person gets an AI reply in their voice, tagged 🤖 unless they hide it (`/afk label`).
+
+The bot ignores every other channel and all DMs. `/persona status` shows the current channel and any permission problems; `/persona disable` turns it off. Deleting the channel disables persona for that server automatically. Existing persona text and AFK settings are kept — they are per user and unchanged.
+
+DMs between partners still work as a plain relay (text, gifs, images are forwarded to the partner).
+
+### Other features
+
+Relationships (`/propose`, `/partner`, `/breakup`, `/anniversary`), profiles and stats, achievements, economy (`/daily`, `/top`, `/slots`, `/blackjack`, `/heist`…), server games, `/movie`, `/nofap`, per-user `/settings`, per-server custom commands (`/addcommand`, …), and an owner-only `/resetuser`.
 
 ---
 
-## 🖼️ Adding GIFs
+## Editing content (no Python needed)
 
-### Single GIF
+Everything text-heavy lives in `content/` as Markdown:
+
 ```
-@YourBot addgif hug https://media.tenor.com/your-hug-gif.gif
-@YourBot addgif kiss https://media.tenor.com/your-kiss-gif.gif
+content/
+├── roleplay/actions.md     # every /roleplay action: stats + response templates
+├── roleplay/intimate.md    # /intimate actions
+├── couple/*.md             # truth, dare, would_you_rather, trivia, compliments, date ideas, …
+└── persona/system_prompt.md
 ```
 
-### Bulk Upload (Multiple Files)
-Drag and drop up to 25 GIF files into Discord:
-```
-@YourBot addgifs <category> <name_prefix> [attachments...]
-```
-Example: `@YourBot addgifs hug cuddle` with 10 GIF attachments → creates `cuddle_1`, `cuddle_2`, etc.
+**Roleplay action** — add a block to `roleplay/actions.md`:
 
-### Bulk Upload from URL List
-Create a `urls.txt` file with one GIF URL per line:
+```markdown
+## myaction
+category: affection        # affection | playful | emotional | social
+description: Do my action
+affection: 10
+xp: 15
+cooldown: 30
+gif: myaction
+target: required           # or optional
+self: no                   # may the user target themselves?
+- **{author}** did myaction to **{target}**! 💫
+- another response…
 ```
-@YourBot addgifsfromlist <category> <name_prefix> [text_file]
-```
-Example: `@YourBot addgifsfromlist pat pat` with `urls.txt` containing 20 URLs → creates `pat_1`, `pat_2`, etc.
 
-Or set `TENOR_API_KEY` in `.env` for automatic GIF fetching as fallback when no local GIFs exist.
+Placeholders: `{author} {target} {target_mention} {author_pronoun} {author_pronoun_obj} {author_possessive} {target_pronoun} {target_pronoun_obj} {target_possessive}`.
+
+**Lists** (compliments, dares, …) are one `- item` per line. **Pair/row files** use `|`: would-you-rather `A | B`; trivia `question | correct | wrong | wrong | wrong`; emoji puzzles `🎬🎬 | Answer / Alt answer`.
+
+Apply edits with `@YourBot reload` (no restart) — or just restart. Run the tests after big edits: they validate the format.
+
+## Owner commands (`@YourBot <command>`)
+
+`sync`, `seed`, `reload`, `addgif`, `addgifs`, `addgifsfromlist`, `clearcache`, `botstats`.
+
+### Adding GIFs
+
+```
+@YourBot addgif hug https://media.tenor.com/....gif
+@YourBot addgifs <category> <prefix> [attachments…]        # up to 25 files
+@YourBot addgifsfromlist <category> <prefix> [urls.txt]    # one URL per line
+```
 
 ---
 
-## ➕ Adding a New Command
-
-Edit `services/action_registry.py` — add one `register(ActionConfig(...))` block:
-
-```python
-register(ActionConfig(
-    name="myaction",
-    category="affection",       # affection | playful | emotional | social
-    affection_gain=10,
-    xp_gain=15,
-    cooldown_seconds=30,
-    gif_category="myaction",
-    self_targetable=False,
-    requires_target=True,
-    description="Do my action",
-    response_templates=[
-        "**{author}** did myaction to **{target}**! 💫",
-        # 4 more...
-    ],
-))
-```
-
-The `/myaction` slash command is created automatically. Nothing else to change.
-
----
-
-## 👑 Owner Commands (prefix)
-
-| Command | Description |
-|---|---|
-| `@Bot sync` | Sync slash commands |
-| `@Bot seed` | Re-seed achievements |
-| `@Bot addgif <category> <url>` | Add a single GIF |
-| `@Bot addgifs <category> <prefix> [files...]` | Bulk add up to 25 GIFs from attachments |
-| `@Bot addgifsfromlist <category> <prefix> [file.txt]` | Add GIFs from URL list file |
-| `@Bot clearcache [prefix]` | Clear in-memory cache |
-| `@Bot botstats` | View bot statistics |
-
----
-
-## 📁 Structure
+## Project layout
 
 ```
-bot_lite/
-├── main.py                     # Entry point
-├── requirements.txt            # 5 dependencies
-├── .env.example
-│
-├── cogs/
-│   ├── roleplay/roleplay_cog.py   # All 32 commands (auto-generated)
-│   ├── profile/profile_cog.py     # /profile /setbio /stats
-│   ├── relationships/             # /propose /partner /breakup /anniversary
-│   ├── achievements/              # /achievements
-│   ├── economy/economy_cog.py     # /daily /top
-│   ├── settings/settings_cog.py   # /settings (interactive panel)
-│   ├── moderation/                # /botban /botunban /resetuser
-│   └── owner/                     # sync, seed, addgif, tasks, help
-│
-├── models/models.py            # SQLAlchemy models (SQLite)
-├── database/connection.py      # aiosqlite async engine
-├── repositories/               # All DB queries
-├── services/
-│   ├── action_registry.py      # All 32 actions defined here
-│   ├── roleplay_service.py     # Core execution engine
-│   └── gif_service.py          # GIF lookup + Tenor fallback
-├── views/embeds.py             # Embed builders + PaginatedView
-└── utils/
-    ├── config.py               # Env-based config
-    ├── cooldowns.py            # In-memory cooldowns + cache
-    └── logging.py              # Simple stdout logging
+main.py                 entry point, cog list, global error + ban handling
+cogs/                   thin Discord layer: commands → services
+  couple/ dmgames/ roleplay/ persona/ help/ …
+services/               business logic
+  dm_games/             session.py (reusable manager) · board.py · quiz.py · registry.py
+repositories/           all database queries
+models/ database/       SQLAlchemy models, engine, additive migrations
+utils/                  config, content loader, interaction helpers, cooldowns, http
+views/                  shared embeds and paginators
+content/                Markdown content (above)
+tests/                  pytest suite
+docs/command-ideas.md   brainstorm of future features (not implemented docs)
 ```
+
+**Adding a game:** subclass `GameSession` (or `TurnGame`) in `services/dm_games/`, implement `render(uid)`, and add one line to `registry.py`. Locking, ownership checks, timeouts and scoring come from the base class; `/play`, `/play list` and `/couple stats` pick it up automatically.
+
+## Database
+
+Tables are created automatically; column additions to older databases run on startup (idempotent) — see `database/connection.py`. This update **adds** four tables (`persona_channels`, `couple_game_stats`, `couple_milestones`, `couple_journal`) and changes nothing existing, so upgrading is just restarting. Back up `bot.db` first as usual.
+
+## Development
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest -q tests
+python -m pyflakes .
+```
+
+## Content scope
+
+The adults-only action text was moved verbatim into `content/roleplay/intimate.md` and is not expanded; no new explicit content is part of this project.
+
+## Free hosting notes
+
+Railway, Discloud and Koyeb all work (set `DISCORD_TOKEN` and `DISCORD_CLIENT_ID`; SQLite is just a file). On hosts that wipe the filesystem on restart the database will be wiped too — pick one that persists files.

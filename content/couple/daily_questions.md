@@ -1,0 +1,22 @@
+# Daily questions
+
+- What made you smile today?
+- What's one thing you're looking forward to this week?
+- What's something small that made your day easier?
+- If today had a theme song, what would it be?
+- What's one thing you'd like us to do together soon?
+- What's a memory from this year you're grateful for?
+- What are you proud of yourself for lately?
+- What's something you've been wanting to tell me?
+- What would your perfect lazy day look like?
+- What's one thing I did recently that you loved?
+- What do you wish we had more time for?
+- What's a tiny dream you've never told me?
+- What's one thing you want to learn this year?
+- What song makes you think of us?
+- What's the best thing you ate recently?
+- What's a place you want us to visit someday?
+- What do you appreciate most about us right now?
+- What's one thing that stressed you out today, and how can I help?
+- When did you feel most like yourself this week?
+- What's one thing we should never stop doing?

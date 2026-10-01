@@ -38,6 +38,8 @@ def build_movie_embed(movie, genre: str | None) -> discord.Embed:
 class MoviesCog(commands.Cog, name="Movies"):
     """Random movie recommendations, powered by TMDB."""
 
+    help_category = ("🎬", "Movies")
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.movie_service = MovieService()

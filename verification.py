@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from repositories.roleplay_profile_repository import RoleplayProfileRepository, VALID_GENDERS
+from repositories.roleplay_profile_repository import RoleplayProfileRepository
 from utils.cooldowns import check_cooldown, set_cooldown
 from utils.logging import get_logger
 
@@ -120,6 +120,8 @@ class StatusView(discord.ui.View):
 
 
 class VerificationCog(commands.Cog, name="Verification"):
+    help_category = ("🎭", "Roleplay")
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.repo = _repo

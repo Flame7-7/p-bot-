@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-import traceback
 
 import discord
 from discord import app_commands
 from discord.ext import commands
-from sqlalchemy import select
 
 from database.connection import close_db, init_db
-from utils.config import get_config
+from utils.config import ConfigError, get_config
+from utils.interactions import GENERIC_ERROR, respond
 from utils.logging import get_logger, setup_logging
 
 setup_logging()
@@ -31,13 +30,11 @@ COGS = [
     "cogs.dmlink.dmlink_cog",
     "cogs.persona.persona_cog",
     "cogs.presence.presence_cog",
-    "cogs.dmgames.dmgames_cog",
-    "cogs.dmgames.wyr_cog",
-    "cogs.dmgames.truthordare_cog",
-    "cogs.dmgames.connect4_cog",
+    "cogs.dmgames.play_cog",
+    "cogs.couple.couple_cog",
     "cogs.owner.owner_cog",
-    "cogs.owner.help_cog",
     "cogs.owner.tasks_cog",
+    "cogs.help.help_cog",
 ]
 
 
@@ -45,8 +42,8 @@ class RoleplayBot(commands.Bot):
     def __init__(self) -> None:
         intents = discord.Intents.default()
         intents.members = True
-        intents.presences = True  # needed for auto-AFK on offline/invisible (see cogs/presence)
-        intents.message_content = True  # required: trivia/guess games read msg.content via wait_for
+        intents.presences = True  # auto-AFK on offline/invisible (see cogs/presence)
+        intents.message_content = True  # persona channel replies and trivia-style games read message text
         super().__init__(
             command_prefix=commands.when_mentioned,
             intents=intents,
@@ -56,7 +53,6 @@ class RoleplayBot(commands.Bot):
     async def setup_hook(self) -> None:
         await init_db()
 
-        # Seed achievements on first run
         from repositories.achievement_repository import AchievementRepository
         await AchievementRepository().seed()
 
@@ -65,7 +61,7 @@ class RoleplayBot(commands.Bot):
                 await self.load_extension(cog)
                 logger.info("loaded: %s", cog)
             except Exception:
-                logger.error("failed to load %s:\n%s", cog, traceback.format_exc())
+                logger.exception("failed to load %s", cog)
 
     async def on_ready(self) -> None:
         logger.info("ready: %s | guilds: %d", self.user, len(self.guilds))
@@ -76,45 +72,35 @@ class RoleplayBot(commands.Bot):
         await GuildRepository().get_or_create(guild.id)
 
     async def on_app_command_error(
-        self,
-        interaction: discord.Interaction,
-        error: app_commands.AppCommandError,
+        self, interaction: discord.Interaction, error: app_commands.AppCommandError
     ) -> None:
-        # Block banned users
-        if interaction.guild_id:
-            from database.connection import get_session
-            from models.models import User
-            async with get_session() as session:
-                r = await session.execute(select(User).where(User.id == interaction.user.id))
-                u = r.scalar_one_or_none()
-                if u and u.is_banned:
-                    try:
-                        await interaction.response.send_message("🚫 You are banned from using this bot.", ephemeral=True)
-                    except Exception:
-                        pass
-                    return
-
-        logger.error("command error: %s", error)
-        msg = "Something went wrong. Please try again!"
-        try:
-            if interaction.response.is_done():
-                await interaction.followup.send(msg, ephemeral=True)
-            else:
-                await interaction.response.send_message(msg, ephemeral=True)
-        except Exception:
-            pass
+        if isinstance(error, app_commands.CheckFailure):
+            return  # the check already answered the user (owner-only, ...)
+        original = getattr(error, "original", error)
+        if isinstance(original, discord.NotFound):
+            logger.info("interaction expired or target deleted: %s", original)
+            return
+        if isinstance(original, discord.Forbidden):
+            await respond(interaction, "I don't have permission to do that here. Check my channel permissions.", ephemeral=True)
+            return
+        logger.error("command %s failed", getattr(interaction.command, "qualified_name", "?"), exc_info=original)
+        await respond(interaction, GENERIC_ERROR, ephemeral=True)
 
     async def close(self) -> None:
-        from services.gif_service import close_http_session
+        from utils.http import close_http_session
         await close_http_session()
         await close_db()
         await super().close()
 
 
 async def main() -> None:
+    try:
+        token = get_config().token
+    except ConfigError as exc:
+        raise SystemExit(f"Configuration error: {exc}") from exc
     bot = RoleplayBot()
     async with bot:
-        await bot.start(get_config().token)
+        await bot.start(token)
 
 
 if __name__ == "__main__":

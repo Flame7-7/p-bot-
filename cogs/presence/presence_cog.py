@@ -14,9 +14,10 @@ OFFLINE_DELAY = 120  # seconds offline before AFK turns on (ignores brief flicke
 RECONCILE_DELAY = 5  # wait for member cache to populate after connecting
 
 
-class PresenceCog(commands.Cog):
+class PresenceCog(commands.Cog, name="Presence"):
     """Keeps AFK mode in sync with the user's Discord status for anyone
-    with auto_afk on: offline/invisible for OFFLINE_DELAY seconds -> AFK on,
+    with auto_afk on (persona replies in the server persona channel):
+    offline/invisible for OFFLINE_DELAY seconds -> AFK on,
     back online -> AFK off. No DMs about it either way.
 
     This is stateless by design -- every check re-derives the correct AFK
@@ -37,14 +38,18 @@ class PresenceCog(commands.Cog):
         self.bot = bot
         self.persona_repo = PersonaRepository()
         self._pending: dict[int, asyncio.Task] = {}
+        self._reconcile_task: asyncio.Task | None = None
 
     def cog_unload(self) -> None:
         for t in self._pending.values():
             t.cancel()
+        if self._reconcile_task:
+            self._reconcile_task.cancel()
 
     @commands.Cog.listener()
     async def on_ready(self) -> None:
-        asyncio.create_task(self._reconcile_all())
+        if self._reconcile_task is None or self._reconcile_task.done():
+            self._reconcile_task = asyncio.create_task(self._reconcile_all())
 
     async def _reconcile_all(self) -> None:
         await asyncio.sleep(RECONCILE_DELAY)

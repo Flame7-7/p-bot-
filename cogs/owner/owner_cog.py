@@ -11,6 +11,7 @@ from repositories.achievement_repository import AchievementRepository
 from services.action_registry import get_all_actions
 from services.gif_service import GifService
 from utils.cooldowns import cache_delete_prefix
+from utils.interactions import respond
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -40,6 +41,8 @@ def is_owner():
 
 
 class OwnerCog(commands.Cog, name="Owner"):
+    help_category = ("👑", "Owner")
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.gif_service = GifService()
@@ -64,8 +67,19 @@ class OwnerCog(commands.Cog, name="Owner"):
         await ctx.send(
             f"✅ Synced **{len(synced)}** global slash commands and "
             f"**{len(guild_counts)}** guild command sets."
-            + (f"\\n{summary}" if summary else "")
+            + (f"\n{summary}" if summary else "")
         )
+
+    @commands.command(name="reload", hidden=True)
+    @commands.is_owner()
+    async def reload_content(self, ctx: commands.Context) -> None:
+        """Reload the Markdown content files (roleplay actions, games, prompts)."""
+        from services.action_registry import load_actions
+        from utils.content import reload_content
+
+        reload_content()
+        load_actions()
+        await ctx.send(f"✅ Content reloaded ({len(get_all_actions())} roleplay actions).")
 
     @commands.command(name="seed", hidden=True)
     @commands.is_owner()
@@ -145,16 +159,32 @@ class OwnerCog(commands.Cog, name="Owner"):
         from sqlalchemy import select
 
         async with get_session() as session:
-            result = await session.execute(select(GIF.url).where(GIF.category == category))
-            urls = [r[0] for r in result.all()]
+            result = await session.execute(
+                select(GIF.id, GIF.url).where(GIF.category == category).order_by(GIF.id)
+            )
+            rows = result.all()
 
-        if not urls:
+        if not rows:
             await interaction.response.send_message(f"No gifs for `{category}` yet.", ephemeral=True)
             return
 
+        # Embed descriptions are capped at 4096 chars and a single URL can be 500, so
+        # fill the embed line by line instead of joining a fixed number of URLs.
+        lines: list[str] = []
+        used = 0
+        for gif_id, url in rows:
+            line = f"`#{gif_id}` {url if len(url) <= 120 else url[:117] + '...'}"
+            if used + len(line) + 1 > 3800:
+                break
+            lines.append(line)
+            used += len(line) + 1
+        hidden = len(rows) - len(lines)
+        if hidden:
+            lines.append(f"…and {hidden} more")
+
         embed = discord.Embed(
-            title=f"Gifs for `{category}` ({len(urls)})",
-            description="\n".join(urls[:20]),
+            title=f"Gifs for `{category}` ({len(rows)})",
+            description="\n".join(lines),
             color=0x2ECC71,
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -163,7 +193,7 @@ class OwnerCog(commands.Cog, name="Owner"):
         self, interaction: discord.Interaction, error: app_commands.AppCommandError
     ) -> None:
         if isinstance(error, app_commands.CheckFailure):
-            await interaction.response.send_message("Owner-only command.", ephemeral=True)
+            await respond(interaction, "Owner-only command.", ephemeral=True)
         else:
             raise error
 
@@ -197,7 +227,7 @@ class OwnerCog(commands.Cog, name="Owner"):
                     failed += 1
                     continue
 
-                gif = await self.gif_service.add_gif(
+                await self.gif_service.add_gif(
                     category, attachment.url, name=f"{name_prefix}_{i}"
                 )
                 added += 1
@@ -239,7 +269,7 @@ class OwnerCog(commands.Cog, name="Owner"):
         failed = 0
         for i, url in enumerate(urls[:50], start=1):
             try:
-                gif = await self.gif_service.add_gif(
+                await self.gif_service.add_gif(
                     category, url, name=f"{name_prefix}_{i}"
                 )
                 added += 1

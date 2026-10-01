@@ -19,6 +19,8 @@ config = get_config()
 
 class GamesCog(commands.Cog, name="Games"):
     """Fun mini-games for users to play!"""
+
+    help_category = ("🎲", "Games")
     
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -362,7 +364,7 @@ class GamesCog(commands.Cog, name="Games"):
         embed.timestamp = discord.utils.utcnow()
         
         # Send question and wait for response
-        message = await interaction.followup.send(embed=embed)
+        await interaction.followup.send(embed=embed)
         
         # Wait for user's answer (30 seconds timeout)
         try:
@@ -736,7 +738,7 @@ class GamesCog(commands.Cog, name="Games"):
         cache_set(f"heist:{channel_id}", True, ttl=45)
 
         await self.user_repo.get_or_create(
-            uid := interaction.user.id,
+            interaction.user.id,
             interaction.user.display_name,
             str(interaction.user.display_avatar.url),
         )

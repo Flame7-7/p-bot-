@@ -56,41 +56,28 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
             raise
 
 
-async def _migrate_nofap_partner_column(conn) -> None:
-    """Lightweight self-healing migration: `create_all` only creates missing
-    tables, it never alters existing ones. Bots deployed before the
-    `partner_id` column existed need it added in place, or every nofap
-    read/write will fail with 'no such column'."""
-
-    def _add_column_if_missing(sync_conn) -> None:
-        from sqlalchemy import text
-
-        cols = [row[1] for row in sync_conn.exec_driver_sql("PRAGMA table_info(nofap_streaks)").fetchall()]
-        if cols and "partner_id" not in cols:
-            sync_conn.exec_driver_sql("ALTER TABLE nofap_streaks ADD COLUMN partner_id INTEGER")
-            logger.info("migrated nofap_streaks: added partner_id column")
-
-    await conn.run_sync(_add_column_if_missing)
+# Additive, idempotent column migrations for databases created before a column
+# existed (create_all never alters existing tables). (table, column, DDL type/default)
+_COLUMN_MIGRATIONS: tuple[tuple[str, str, str], ...] = (
+    ("nofap_streaks", "partner_id", "INTEGER"),
+    ("persona_profiles", "auto_afk", "BOOLEAN DEFAULT 1"),
+    ("gifs", "name", "VARCHAR(100)"),
+)
 
 
-async def _migrate_persona_auto_afk_column(conn) -> None:
-    """Adds persona_profiles.auto_afk to databases created before it existed."""
-
-    def _add_column_if_missing(sync_conn) -> None:
-        cols = [row[1] for row in sync_conn.exec_driver_sql("PRAGMA table_info(persona_profiles)").fetchall()]
-        if cols and "auto_afk" not in cols:
-            sync_conn.exec_driver_sql("ALTER TABLE persona_profiles ADD COLUMN auto_afk BOOLEAN DEFAULT 1")
-            logger.info("migrated persona_profiles: added auto_afk column")
-
-    await conn.run_sync(_add_column_if_missing)
+def _apply_column_migrations(sync_conn) -> None:
+    for table, column, ddl in _COLUMN_MIGRATIONS:
+        cols = [row[1] for row in sync_conn.exec_driver_sql(f"PRAGMA table_info({table})").fetchall()]
+        if cols and column not in cols:
+            sync_conn.exec_driver_sql(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}")
+            logger.info("migrated %s: added %s column", table, column)
 
 
 async def init_db() -> None:
     engine = get_engine()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        await _migrate_nofap_partner_column(conn)
-        await _migrate_persona_auto_afk_column(conn)
+        await conn.run_sync(_apply_column_migrations)
     logger.info("database initialised: %s", get_config().db_path)
 
 

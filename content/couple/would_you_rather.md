@@ -1,0 +1,22 @@
+# Would you rather (A | B)
+
+- Always be 10 minutes late | Always be 20 minutes early
+- Only communicate through memes for a week | Only communicate through voice notes for a week
+- Go on a spontaneous weekend trip | Have a fully planned dream vacation
+- Cook a meal together every night | Order in and watch a show every night
+- Have a rewind button on your relationship | Have a fast-forward button
+- Know how you two met (in detail) as a movie | Not know and just enjoy it as it happens
+- Always have the last word | Never need the last word
+- Celebrate every anniversary big | Keep it low-key every year
+- Text first, always | Wait for them to text first
+- Share a single social media account | Never post about each other at all
+- Have unlimited travel but no savings | Have great savings but rarely travel
+- Fight it out immediately | Sleep on it and talk in the morning
+- Have a couple's playlist you both add to | Keep your music tastes totally separate
+- Get matching tattoos | Get matching pet names instead
+- Live 5 minutes from each other's family | Live 5 hours away from both
+- Have a movie marathon at home | Go out for a fancy dinner
+- Get a surprise gift | Get a handwritten letter
+- Adopt a cat together | Adopt a dog together
+- Wake up early for sunrise walks | Stay up late for stargazing
+- Be stuck in a lift together for an hour | Be stuck on a long train ride together
