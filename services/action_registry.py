@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 # "{author_pronoun} blushed" / "kissed {target_pronoun_obj}" / "hugged
 # {target_possessive} friend". Keyed by the same values
 # RoleplayProfileRepository.VALID_GENDERS accepts, plus a neutral fallback
-# used whenever a user hasn't run /consent (or picked non-binary).
+# used whenever a user hasn't run /role (or picked non-binary).
 PRONOUNS: dict[str, dict[str, str]] = {
     "male": {"subject": "he", "object": "him", "possessive": "his"},
     "female": {"subject": "she", "object": "her", "possessive": "her"},
@@ -47,7 +47,7 @@ class ActionConfig:
         """Renders a random response template.
 
         `author_gender`/`target_gender` are optional role selections from
-        /consent (one of PRONOUNS' keys).
+        /role (one of PRONOUNS' keys).
 
         `author_mention`/`target_mention` should contain Discord mention
         strings such as ``<@123456789>``. When supplied, the existing

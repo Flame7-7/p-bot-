@@ -77,7 +77,9 @@ One command instead of dozens:
 
 Start typing in `action` for autocomplete; `/help` → Roleplay lists every action by category. In a DM with the bot, `target` defaults to your partner and the result is mirrored to them.
 
-`/intimate` holds the adults-only actions. It requires `/consent` and only works in DMs or age-restricted channels, and is hidden from `/help` elsewhere.
+`/role` sets the pronouns used in roleplay messages (optional, no setup or consent step).
+
+`/intimate` holds the adults-only actions. It only works in DMs or age-restricted channels, and is hidden from `/help` elsewhere.
 
 Want the old per-action commands too? Set `LEGACY_ROLEPLAY_COMMANDS=true` — they are generated from the same content files. Mind Discord's 100 global command limit.
 

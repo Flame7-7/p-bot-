@@ -15,9 +15,7 @@ from views.embeds import PaginatedViewMarkdown
 
 MANAGEMENT_COMMANDS = {
     "help",
-    "consent",
-    "verify",
-    "consentstatus",
+    "role",
     "addcommand",
     "editcommand",
     "removecommand",

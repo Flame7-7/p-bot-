@@ -131,7 +131,7 @@ class ResetConfirmView(DiscordUIV2View):
 
 
 class NoFapCog(commands.Cog, name="No-Fap"):
-    """Personal streak tracking. Fully separate from the roleplay/consent
+    """Personal streak tracking. Fully separate from the roleplay
     system -- purely a self-improvement tool."""
 
     help_category = ("🌱", "Habits")

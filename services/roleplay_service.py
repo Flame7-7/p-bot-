@@ -118,10 +118,8 @@ class RoleplayService:
         # GIF
         gif_url = await self.gif_service.get_random_gif(action.gif_category)
 
-        # Response text -- gender is entirely optional here (unlike the
-        # requires_verification() gate in verification.py): a user who has
-        # never run /consent just gets neutral pronouns, since none of
-        # these commands (hug/pat/etc.) ever required setup before.
+        # Response text -- a role is optional: a user who never ran /role
+        # just gets neutral pronouns.
         author_profile = await self.roleplay_profile_repo.get(author.id)
         target_profile = await self.roleplay_profile_repo.get(target.id) if target else None
         target_name = target.display_name if target else author.display_name

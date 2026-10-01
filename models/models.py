@@ -173,18 +173,20 @@ class UserSettings(Base):
 
 
 class RoleplayProfile(Base):
-    """Persisted replacement for the old in-memory `user_profiles = {}` in
-    verification.py. Not a FK to `users.id` (same pattern as
-    Interaction.target_id / GuildSettings.guild_id below) so that setting
-    a role/consent works even before a user has run any roleplay command
-    that would create their `users` row via UserRepository.get_or_create.
+    """Per-user role (pronoun choice). Not a FK to `users.id` (same pattern as
+    Interaction.target_id / GuildSettings.guild_id below) so that setting a
+    role works even before a user has run any roleplay command.
+
+    `consent_given` / `consented_at` are legacy columns from the removed
+    consent flow. They are no longer read or written; they're kept (with a
+    server default) so existing databases keep working without a migration.
     """
     __tablename__ = "roleplay_profiles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(Integer, unique=True)
     gender: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
-    consent_given: Mapped[bool] = mapped_column(Boolean, default=False)
+    consent_given: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
     consented_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
@@ -309,7 +311,7 @@ class GuildSettings(Base):
 
 class NoFapStreak(Base):
     """Personal habit-tracking streak, entirely separate from the
-    roleplay/consent system. Same `user_id`-keyed, no-FK pattern as
+    roleplay system. Same `user_id`-keyed, no-FK pattern as
     RoleplayProfile so a user can `/nofap start` without needing a
     `users` row first.
     """

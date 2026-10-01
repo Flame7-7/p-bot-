@@ -99,7 +99,7 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
 
     @app_commands.command(
         name="intimate",
-        description="Adults-only actions (needs /consent; DMs or age-restricted channels)",
+        description="Adults-only actions (DMs or age-restricted channels)",
         extras={"nsfw_only": True},
     )
     @app_commands.describe(action="What to do", target="Who to do it to (in DMs it defaults to your partner)")
@@ -120,9 +120,6 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
         nsfw_channel = bool(getattr(channel, "is_nsfw", lambda: False)()) and not in_dm
         if not (in_dm or nsfw_channel):
             await respond(interaction, "🔞 Use this in DMs or an age-restricted channel.", ephemeral=True)
-            return False
-        if not await self.profile_repo.is_verified(interaction.user.id):
-            await respond(interaction, "🔒 Run `/consent` first to unlock this.", ephemeral=True)
             return False
         return True
 
