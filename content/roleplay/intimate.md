@@ -421,3 +421,15 @@ self: yes
 - {target_mention} — **{author}** lost complete control and squirted everywhere thanks to {target_mention}! 😈
 - {target_mention} — **{author}** made a massive mess squirting all over {target_mention}! 💥
 - {target_mention} — **{author}** squirted uncontrollably — {target_mention} looked very proud of themselves! 😏
+
+
+## animefuck
+category: intimate
+description: anime gifs
+affection: 52
+xp: 62
+gif: animefuck
+target: optional
+self: yes
+- {target_mention} — **{author}** and made love {target_mention} 💦
+
