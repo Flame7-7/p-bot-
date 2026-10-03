@@ -108,20 +108,20 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
         if not _is_intimate(action):
             await respond(interaction, "I don't know that action — start typing to search.", ephemeral=True)
             return
-        if not await self._intimate_allowed(interaction):
+        if not self._channel_allows_adult_content(interaction):
+            await respond(interaction, "🔞 Use this in DMs or an age-restricted channel.", ephemeral=True)
             return
         await self._dispatch(interaction, action, target)
 
     # ── internals ────────────────────────────────────────────────────────────
 
-    async def _intimate_allowed(self, interaction: discord.Interaction) -> bool:
+    @staticmethod
+    def _channel_allows_adult_content(interaction: discord.Interaction) -> bool:
+        """Discord's own rule: adult content belongs in DMs or age-restricted channels."""
         channel = interaction.channel
-        in_dm = isinstance(channel, discord.DMChannel)
-        nsfw_channel = bool(getattr(channel, "is_nsfw", lambda: False)()) and not in_dm
-        if not (in_dm or nsfw_channel):
-            await respond(interaction, "🔞 Use this in DMs or an age-restricted channel.", ephemeral=True)
-            return False
-        return True
+        if interaction.guild is None or isinstance(channel, discord.DMChannel):
+            return True
+        return bool(getattr(channel, "is_nsfw", lambda: False)())
 
     async def _dispatch(self, interaction: discord.Interaction, action_name: str, target: discord.User | None) -> None:
         try:

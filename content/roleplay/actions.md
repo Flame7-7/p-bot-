@@ -8,7 +8,6 @@ category: affection
 description: Give someone a warm hug
 affection: 15
 xp: 20
-cooldown: 30
 gif: hug
 target: required
 self: no
@@ -24,7 +23,6 @@ category: affection
 description: Pat someone on the head
 affection: 10
 xp: 15
-cooldown: 30
 gif: pat
 target: required
 self: no
@@ -39,7 +37,6 @@ category: affection
 description: Kiss someone
 affection: 15
 xp: 20
-cooldown: 30
 gif: kiss
 target: required
 self: no
@@ -54,7 +51,6 @@ category: affection
 description: Cuddle with someone
 affection: 15
 xp: 20
-cooldown: 30
 gif: cuddle
 target: required
 self: no
@@ -69,7 +65,6 @@ category: affection
 description: Poke someone
 affection: 5
 xp: 8
-cooldown: 30
 gif: poke
 target: required
 self: no
@@ -84,7 +79,6 @@ category: affection
 description: Boop someone on the nose
 affection: 5
 xp: 8
-cooldown: 30
 gif: boop
 target: required
 self: no
@@ -99,7 +93,6 @@ category: affection
 description: Give someone a headpat
 affection: 10
 xp: 15
-cooldown: 30
 gif: headpat
 target: required
 self: no
@@ -114,7 +107,6 @@ category: affection
 description: Nuzzle someone affectionately
 affection: 12
 xp: 15
-cooldown: 30
 gif: nuzzle
 target: required
 self: no
@@ -129,7 +121,6 @@ category: affection
 description: Snuggle with someone
 affection: 13
 xp: 18
-cooldown: 30
 gif: snuggle
 target: required
 self: no
@@ -144,7 +135,6 @@ category: affection
 description: Tackle someone in excitement
 affection: 10
 xp: 15
-cooldown: 30
 gif: tackle
 target: required
 self: no
@@ -159,7 +149,6 @@ category: playful
 description: Slap someone playfully
 affection: 2
 xp: 5
-cooldown: 15
 gif: slap
 target: required
 self: no
@@ -174,7 +163,6 @@ category: playful
 description: Punch someone playfully
 affection: 2
 xp: 5
-cooldown: 15
 gif: punch
 target: required
 self: no
@@ -189,7 +177,6 @@ category: playful
 description: Kick someone playfully
 affection: 2
 xp: 5
-cooldown: 15
 gif: kick
 target: required
 self: no
@@ -204,7 +191,6 @@ category: playful
 description: Bite someone playfully
 affection: 5
 xp: 8
-cooldown: 15
 gif: bite
 target: required
 self: no
@@ -219,7 +205,6 @@ category: playful
 description: Lick someone
 affection: 5
 xp: 8
-cooldown: 15
 gif: lick
 target: required
 self: no
@@ -234,7 +219,6 @@ category: playful
 description: Tickle someone
 affection: 8
 xp: 10
-cooldown: 15
 gif: tickle
 target: required
 self: no
@@ -249,7 +233,6 @@ category: playful
 description: Pounce on someone
 affection: 8
 xp: 10
-cooldown: 15
 gif: pounce
 target: required
 self: no
@@ -264,7 +247,6 @@ category: playful
 description: Throw something at someone
 affection: 3
 xp: 5
-cooldown: 15
 gif: throw
 target: required
 self: no
@@ -279,7 +261,6 @@ category: emotional
 description: Express that you're crying
 affection: 1
 xp: 5
-cooldown: 15
 gif: cry
 target: optional
 self: yes
@@ -295,7 +276,6 @@ category: emotional
 description: Wave at someone
 affection: 3
 xp: 5
-cooldown: 15
 gif: wave
 target: optional
 self: yes
@@ -310,7 +290,6 @@ category: emotional
 description: Blush
 affection: 2
 xp: 5
-cooldown: 15
 gif: blush
 target: optional
 self: yes
@@ -326,7 +305,6 @@ category: emotional
 description: Smile warmly
 affection: 3
 xp: 5
-cooldown: 15
 gif: smile
 target: optional
 self: yes
@@ -342,7 +320,6 @@ category: emotional
 description: Wink at someone
 affection: 3
 xp: 5
-cooldown: 15
 gif: wink
 target: optional
 self: yes
@@ -358,7 +335,6 @@ category: emotional
 description: Dance
 affection: 5
 xp: 8
-cooldown: 15
 gif: dance
 target: optional
 self: yes
@@ -373,7 +349,6 @@ category: emotional
 description: Laugh out loud
 affection: 3
 xp: 5
-cooldown: 15
 gif: laugh
 target: optional
 self: yes
@@ -388,7 +363,6 @@ category: emotional
 description: Sigh expressively
 affection: 1
 xp: 5
-cooldown: 15
 gif: sigh
 target: optional
 self: yes
@@ -403,7 +377,6 @@ category: social
 description: High-five someone
 affection: 8
 xp: 10
-cooldown: 15
 gif: highfive
 target: required
 self: no
@@ -418,7 +391,6 @@ category: social
 description: Fist-bump someone
 affection: 6
 xp: 8
-cooldown: 15
 gif: fistbump
 target: required
 self: no
@@ -433,7 +405,6 @@ category: social
 description: Shake hands with someone
 affection: 5
 xp: 8
-cooldown: 15
 gif: handshake
 target: required
 self: no
@@ -448,7 +419,6 @@ category: social
 description: Bow respectfully
 affection: 5
 xp: 8
-cooldown: 15
 gif: bow
 target: required
 self: no
@@ -463,7 +433,6 @@ category: social
 description: Stare at someone
 affection: 3
 xp: 5
-cooldown: 15
 gif: stare
 target: required
 self: no
@@ -478,7 +447,6 @@ category: social
 description: Glare at someone
 affection: 2
 xp: 5
-cooldown: 15
 gif: glare
 target: required
 self: no

@@ -160,16 +160,19 @@ class PairGame(ChoiceGame):
 
 class WouldYouRather(PairGame):
     key, title, emoji, stats_game = "wyr", "Would You Rather", "🤍", "wyr"
+    category, blurb, duration = "Funny", 'Five dilemmas — do you agree?', "~5 min"
 
 
 class ThisOrThat(PairGame):
     key, title, emoji, stats_game = "thisorthat", "This or That", "⚡", "thisorthat"
+    category, blurb, duration = "Funny", 'Rapid-fire preferences', "~3 min"
     content_path = "couple/this_or_that.md"
     prompt = "This or that?"
 
 
 class Compatibility(ChoiceGame):
     key, title, emoji, stats_game = "compat", "Compatibility Quiz", "💘", "compat"
+    category, blurb, duration = "Relationship", 'Get your match percentage', "~5 min"
 
     def make_rounds(self) -> list[Round]:
         rows = [r for r in load_pairs("couple/compatibility.md") if len(r) >= 3]
@@ -191,6 +194,7 @@ class Compatibility(ChoiceGame):
 
 class MostLikely(ChoiceGame):
     key, title, emoji, stats_game = "mostlikely", "Who's More Likely To…", "🙋", "mostlikely"
+    category, blurb, duration = "Funny", 'Point at who it would be', "~5 min"
 
     def make_rounds(self) -> list[Round]:
         names = [self.name(p) for p in self.players]
@@ -214,6 +218,8 @@ class MostLikely(ChoiceGame):
 
 class Trivia(ChoiceGame):
     key, title, emoji, stats_game = "trivia", "Trivia", "🧩", "trivia"
+    category, blurb, duration = "Brain", 'Five questions, higher score wins', "~5 min"
+    difficulty = "Medium"
 
     def make_rounds(self) -> list[Round]:
         rows = [r for r in load_pairs("couple/trivia.md") if len(r) >= 3]
@@ -257,6 +263,8 @@ class KnowGame(GameSession):
     """'Who knows who better?' (multiple choice) and 'Guess my favourite' (free text)."""
 
     key, title, emoji, stats_game = "knowme", "Who Knows Who Better?", "🔍", "knowme"
+    category, blurb, duration = "Relationship", 'Answer about yourself, then guess your partner', "~8 min"
+    difficulty = "Medium"
     free_text = False
 
     def __init__(self, manager, p1, p2) -> None:
@@ -371,6 +379,8 @@ class KnowGame(GameSession):
 
 class GuessFavourite(KnowGame):
     key, title, emoji, stats_game = "favourite", "Guess My Favourite", "💝", "favourite"
+    category, blurb, duration = "Relationship", "Free-text favourites, guess each other's", "~8 min"
+    difficulty = "Medium"
     free_text = True
 
 
@@ -473,6 +483,8 @@ class GuessRounds(GameSession):
 
 class EmojiGuess(GuessRounds):
     key, title, emoji, stats_game = "emoji", "Emoji Guessing", "😎", "emoji"
+    category, blurb, duration = "Brain", 'Decode the emoji puzzle first', "~5 min"
+    difficulty = "Medium"
     puzzle_label = "Guess the movie / phrase"
 
     def make_puzzles(self) -> list[tuple[str, list[str]]]:
@@ -482,6 +494,8 @@ class EmojiGuess(GuessRounds):
 
 class WordScramble(GuessRounds):
     key, title, emoji, stats_game = "word", "Word Guessing", "🔤", "word"
+    category, blurb, duration = "Brain", 'Unscramble the word first', "~5 min"
+    difficulty = "Medium"
     puzzle_label = "Unscramble"
 
     def make_puzzles(self) -> list[tuple[str, list[str]]]:
@@ -501,6 +515,7 @@ class WordScramble(GuessRounds):
 
 class TruthOrDare(TurnGame):
     key, title, emoji = "truthordare", "Truth or Dare", "🎭"
+    category, blurb, duration = "Funny", 'Take turns, couple edition', "Open-ended"
     stats_game = None
 
     def __init__(self, manager, p1, p2) -> None:
@@ -571,6 +586,7 @@ class TruthOrDare(TurnGame):
 
 class PickOne(ChoiceGame):
     key, title, emoji, stats_game = "pickone", "Pick One for Tonight", "🌙", None
+    category, blurb, duration = "Relationship", 'Settle what to do tonight', "~1 min"
 
     def __init__(self, manager, p1, p2) -> None:
         super().__init__(manager, p1, p2)

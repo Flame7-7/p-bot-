@@ -1,13 +1,12 @@
 # Intimate actions
 
-Adults-only actions used by `/intimate` (consent required, age-restricted channels or DMs only). Same format as actions.md.
+Adults-only actions used by `/intimate` (age-restricted channels or DMs only). Same format as actions.md.
 
 ## fuck
 category: intimate
 description: Have sex with someone
 affection: 50
 xp: 60
-cooldown: 300
 gif: fuck
 target: required
 self: no
@@ -22,7 +21,6 @@ category: intimate
 description: Give someone a blowjob
 affection: 40
 xp: 50
-cooldown: 300
 gif: blowjob
 target: required
 self: no
@@ -37,7 +35,6 @@ category: intimate
 description: Creampie someone
 affection: 55
 xp: 65
-cooldown: 300
 gif: creampie
 target: required
 self: no
@@ -52,7 +49,6 @@ category: intimate
 description: Moan at/for someone
 affection: 20
 xp: 25
-cooldown: 60
 gif: moan
 target: optional
 self: yes
@@ -67,7 +63,6 @@ category: intimate
 description: Strip for someone
 affection: 30
 xp: 35
-cooldown: 120
 gif: strip
 target: optional
 self: yes
@@ -82,7 +77,6 @@ category: intimate
 description: Spank someone
 affection: 25
 xp: 30
-cooldown: 60
 gif: spank
 target: required
 self: no
@@ -97,7 +91,6 @@ category: intimate
 description: Grope someone
 affection: 25
 xp: 30
-cooldown: 60
 gif: grope
 target: required
 self: no
@@ -112,7 +105,6 @@ category: intimate
 description: Finger someone
 affection: 35
 xp: 45
-cooldown: 180
 gif: fingerfuck
 target: required
 self: no
@@ -127,7 +119,6 @@ category: intimate
 description: Tease someone sexually
 affection: 20
 xp: 25
-cooldown: 60
 gif: tease
 target: required
 self: no
@@ -142,7 +133,6 @@ category: intimate
 description: Seduce someone
 affection: 30
 xp: 35
-cooldown: 120
 gif: seduce
 target: required
 self: no
@@ -157,7 +147,6 @@ category: intimate
 description: Make out with someone
 affection: 30
 xp: 35
-cooldown: 120
 gif: makeout
 target: required
 self: no
@@ -172,7 +161,6 @@ category: intimate
 description: Ride someone
 affection: 45
 xp: 55
-cooldown: 300
 gif: ride
 target: required
 self: no
@@ -187,7 +175,6 @@ category: intimate
 description: Cum on/for someone
 affection: 40
 xp: 50
-cooldown: 300
 gif: cum
 target: optional
 self: yes
@@ -202,7 +189,6 @@ category: intimate
 description: Undress someone
 affection: 25
 xp: 30
-cooldown: 120
 gif: undress
 target: required
 self: no
@@ -217,7 +203,6 @@ category: intimate
 description: Go down on someone / eat someone out
 affection: 40
 xp: 50
-cooldown: 240
 gif: lickout
 target: required
 self: no
@@ -232,7 +217,6 @@ category: intimate
 description: Give someone a handjob
 affection: 35
 xp: 40
-cooldown: 180
 gif: handjob
 target: required
 self: no
@@ -247,7 +231,6 @@ category: intimate
 description: Give someone a titfuck
 affection: 38
 xp: 45
-cooldown: 240
 gif: titfuck
 target: required
 self: no
@@ -262,7 +245,6 @@ category: intimate
 description: Have anal sex with someone
 affection: 50
 xp: 60
-cooldown: 300
 gif: anal
 target: required
 self: no
@@ -277,7 +259,6 @@ category: intimate
 description: Tie someone up
 affection: 35
 xp: 45
-cooldown: 240
 gif: bondage
 target: required
 self: no
@@ -292,7 +273,6 @@ category: intimate
 description: Dominate someone
 affection: 40
 xp: 50
-cooldown: 240
 gif: dominate
 target: required
 self: no
@@ -307,7 +287,6 @@ category: intimate
 description: Submit to someone
 affection: 35
 xp: 45
-cooldown: 240
 gif: submit
 target: optional
 self: yes
@@ -322,7 +301,6 @@ category: intimate
 description: Choke someone during intimacy
 affection: 30
 xp: 40
-cooldown: 180
 gif: choke
 target: required
 self: no
@@ -337,7 +315,6 @@ category: intimate
 description: Edge someone relentlessly
 affection: 38
 xp: 48
-cooldown: 240
 gif: edging
 target: required
 self: no
@@ -352,7 +329,6 @@ category: intimate
 description: Gangbang someone
 affection: 60
 xp: 75
-cooldown: 600
 gif: gangbang
 target: required
 self: no
@@ -367,7 +343,6 @@ category: intimate
 description: Have a threesome with someone
 affection: 55
 xp: 65
-cooldown: 420
 gif: threesome
 target: required
 self: no
@@ -382,7 +357,6 @@ category: intimate
 description: Sit on someone's face
 affection: 40
 xp: 50
-cooldown: 240
 gif: facesit
 target: required
 self: no
@@ -397,7 +371,6 @@ category: intimate
 description: Give someone a facial
 affection: 42
 xp: 52
-cooldown: 300
 gif: cum_facial
 target: required
 self: no
@@ -412,7 +385,6 @@ category: intimate
 description: Do a sexual roleplay with someone
 affection: 45
 xp: 55
-cooldown: 300
 gif: roleplay_sex
 target: required
 self: no
@@ -427,7 +399,6 @@ category: intimate
 description: Have an orgasm because of someone
 affection: 50
 xp: 60
-cooldown: 300
 gif: orgasm
 target: optional
 self: yes
@@ -442,7 +413,6 @@ category: intimate
 description: Squirt because of someone
 affection: 52
 xp: 62
-cooldown: 360
 gif: squirt
 target: optional
 self: yes

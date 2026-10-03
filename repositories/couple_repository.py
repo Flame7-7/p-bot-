@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import delete, select
 
 from database.connection import get_session
-from models.models import CoupleGameStat, CoupleMilestone, JournalEntry
+from models.models import ActiveGameMessage, CoupleGameStat, CoupleMilestone, JournalEntry
 
 
 def pair(a: int, b: int) -> tuple[int, int]:
@@ -107,3 +107,27 @@ class CoupleRepository:
                 .limit(limit)
             )
             return list(r.scalars().all())
+
+
+class GameMessageRepository:
+    """Which message shows each player's live game (see ActiveGameMessage)."""
+
+    async def upsert(self, user_id: int, channel_id: int, message_id: int, game_key: str) -> None:
+        async with get_session() as session:
+            row = await session.get(ActiveGameMessage, user_id)
+            if row is None:
+                session.add(ActiveGameMessage(user_id=user_id, channel_id=channel_id, message_id=message_id, game_key=game_key))
+            else:
+                row.channel_id, row.message_id, row.game_key = channel_id, message_id, game_key
+
+    async def delete_for(self, user_ids: list[int]) -> None:
+        async with get_session() as session:
+            await session.execute(delete(ActiveGameMessage).where(ActiveGameMessage.user_id.in_(user_ids)))
+
+    async def pop_all(self) -> list[ActiveGameMessage]:
+        """Return and remove every row (used once at startup to clean up after a restart)."""
+        async with get_session() as session:
+            rows = list((await session.execute(select(ActiveGameMessage))).scalars().all())
+            data = [ActiveGameMessage(user_id=r.user_id, channel_id=r.channel_id, message_id=r.message_id, game_key=r.game_key) for r in rows]
+            await session.execute(delete(ActiveGameMessage))
+            return data

@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from repositories.roleplay_profile_repository import RoleplayProfileRepository
+from utils.interactions import OwnedView
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -12,20 +13,13 @@ logger = get_logger(__name__)
 _GENDER_LABELS = {"male": "Male", "female": "Female", "non-binary": "Non-Binary"}
 
 
-class RoleSelect(discord.ui.View):
-    """One-click pronoun picker. No consent step, no gating -- the role only
-    changes the pronouns used in roleplay messages."""
+class RoleSelect(OwnedView):
+    """One-click pronoun picker; the role only changes the pronouns used in roleplay messages."""
 
     def __init__(self, repo: RoleplayProfileRepository, user_id: int) -> None:
-        super().__init__(timeout=180)
+        super().__init__([user_id], timeout=180)
         self.repo = repo
         self.user_id = user_id
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user.id != self.user_id:
-            await interaction.response.send_message("This menu isn't yours.", ephemeral=True)
-            return False
-        return True
 
     async def _select(self, interaction: discord.Interaction, gender: str) -> None:
         await self.repo.set_gender(self.user_id, gender)
@@ -65,9 +59,9 @@ class RoleCog(commands.Cog, name="Role"):
             description=f"Current: **{current}**\nChoose the pronouns to use in roleplay commands.",
             color=discord.Color.blurple(),
         )
-        await interaction.response.send_message(
-            embed=embed, view=RoleSelect(self.repo, interaction.user.id), ephemeral=True
-        )
+        view = RoleSelect(self.repo, interaction.user.id)
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        view.message = await interaction.original_response()
 
 
 async def setup(bot: commands.Bot) -> None:

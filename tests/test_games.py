@@ -23,6 +23,26 @@ class NullRepo:
         self.records.append((game, kw))
 
 
+class MemMessages:
+    """In-memory stand-in for GameMessageRepository."""
+
+    def __init__(self):
+        self.rows = {}
+
+    async def upsert(self, user_id, channel_id, message_id, game_key):
+        self.rows[user_id] = (channel_id, message_id, game_key)
+
+    async def delete_for(self, user_ids):
+        for u in user_ids:
+            self.rows.pop(u, None)
+
+    async def pop_all(self):
+        from types import SimpleNamespace
+        rows = [SimpleNamespace(user_id=u, channel_id=c, message_id=m, game_key=g) for u, (c, m, g) in self.rows.items()]
+        self.rows.clear()
+        return rows
+
+
 def run(coro):
     return asyncio.run(coro)
 
@@ -31,6 +51,7 @@ async def begin(cls, **opts):
     me, her = FakeUser(1, "Him"), FakeUser(2, "Her")
     mgr = GameManager(None)
     mgr.repo = NullRepo()
+    mgr.messages_repo = MemMessages()
     inter = FakeInteraction(me)
     session = await mgr.start(inter, her, cls, **opts)
     assert session is not None, inter.last_text
@@ -164,6 +185,7 @@ def test_dm_closed_aborts_cleanly():
             return None
         her.send = refuse
         mgr = GameManager(None)
+        mgr.messages_repo = MemMessages()
         inter = FakeInteraction(me)
         assert await mgr.start(inter, her, TicTacToe) is None
         assert mgr.sessions() == set() and "DM" in inter.last_text

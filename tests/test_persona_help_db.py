@@ -170,12 +170,13 @@ def test_help_matches_registered_commands_and_hides_privileged(tmp_path, monkeyp
                 return any(u == name or u.startswith(name + " ") for u in usages(cats))
 
             assert has(normal, "/help") and has(normal, "/roleplay")
-            assert has(normal, "/play start") and has(normal, "/couple compliment") and has(normal, "/persona set")
+            assert has(normal, "/play") and has(normal, "/couple compliment") and has(normal, "/persona set")
             in_guild = collect(bot, guild=discord.Object(id=5), perms=plain, nsfw_ok=False, is_owner=False)
             assert has(in_guild, "/persona setup") and not has(normal, "/persona setup"), "guild-only commands hidden in DMs"
-            assert "/play" not in usages(normal), "groups expand to their subcommands"
+            assert "/couple" not in usages(normal), "groups expand to their subcommands"
             assert not has(normal, "/gif add") and not has(normal, "/resetuser"), "owner commands hidden"
-            assert not has(normal, "/intimate"), "nsfw-only hidden outside nsfw channels/DMs"
+            assert not has(normal, "/intimate"), "adult actions are hidden outside DMs/age-restricted channels"
+            assert has(collect(bot, guild=None, perms=plain, nsfw_ok=True, is_owner=False), "/intimate")
             assert "Owner" not in normal and "Moderation" not in normal
             # roleplay shows one command plus the action list, not 60 commands
             assert len(normal["Roleplay"].entries) <= 6 and normal["Roleplay"].notes

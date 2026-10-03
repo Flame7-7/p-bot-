@@ -4,32 +4,77 @@ from __future__ import annotations
 import discord
 
 
+class FakeChannel:
+    """A DM channel: remembers its messages in order so tests can see what is 'at the bottom'."""
+
+    _next_id = 5000
+
+    def __init__(self, cid: int, owner: "FakeUser") -> None:
+        self.id, self.owner = cid, owner
+        self.messages: list[FakeMessage] = []
+        self.fail_send: Exception | None = None
+
+    async def send(self, content=None, embed=None, view=None, **kw) -> "FakeMessage":
+        if self.fail_send:
+            raise self.fail_send
+        return self.post(embed=embed, view=view, content=content)
+
+    def post(self, embed=None, view=None, content=None, author_is_bot=True) -> "FakeMessage":
+        FakeMessage._next += 1
+        m = FakeMessage(self, FakeMessage._next)
+        m.embed, m.view, m.content = embed, view, content
+        self.messages.append(m)
+        return m
+
+    @property
+    def last(self) -> "FakeMessage | None":
+        return self.messages[-1] if self.messages else None
+
+
 class FakeMessage:
     _next = 1000
 
-    def __init__(self, owner: "FakeUser") -> None:
-        FakeMessage._next += 1
-        self.id = FakeMessage._next
-        self.owner = owner
+    def __init__(self, channel: FakeChannel, mid: int) -> None:
+        self.id = mid
+        self.channel = channel
         self.embed: discord.Embed | None = None
         self.view: discord.ui.View | None = None
-        self.jump_url = f"https://discord.com/channels/@me/1/{self.id}"
+        self.content: str | None = None
+        self.deleted = False
+        self.fail_delete: Exception | None = None
+        self.jump_url = f"https://discord.com/channels/@me/{channel.id}/{mid}"
 
     async def edit(self, **kw) -> None:
+        if self.deleted:
+            raise discord.NotFound(_Resp(404), "Unknown Message")
         self.embed = kw.get("embed", self.embed)
         self.view = kw.get("view", self.view)
+
+    async def delete(self) -> None:
+        if self.fail_delete:
+            raise self.fail_delete
+        if self.deleted:
+            raise discord.NotFound(_Resp(404), "Unknown Message")
+        self.deleted = True
+        self.channel.messages.remove(self)
+
+
+class _Resp:
+    def __init__(self, status: int) -> None:
+        self.status, self.reason = status, "x"
 
 
 class FakeUser:
     def __init__(self, uid: int, name: str) -> None:
         self.id, self.display_name = uid, name
-        self.dms: list[FakeMessage] = []
+        self.channel = FakeChannel(uid * 100, self)
+
+    @property
+    def dms(self) -> list[FakeMessage]:
+        return self.channel.messages
 
     async def send(self, embed=None, view=None, **kw) -> FakeMessage:
-        m = FakeMessage(self)
-        m.embed, m.view = embed, view
-        self.dms.append(m)
-        return m
+        return await self.channel.send(embed=embed, view=view)
 
 
 class FakeResponse:
@@ -47,6 +92,9 @@ class FakeResponse:
         msg = self.inter.message
         if msg:
             await msg.edit(**kw)
+
+    async def autocomplete(self, *a, **k) -> None:  # pragma: no cover - not used
+        self.done = True
 
     async def send_message(self, content=None, **kw) -> None:
         self.done = True
@@ -75,6 +123,18 @@ class FakeInteraction:
         self.response = FakeResponse(self)
         self.followup = FakeFollowup(self)
         self.id = 1
+        self.guild = None
+        self.guild_id = None
+        self.channel = None
+        self.data: dict = {}
+
+    async def edit_original_response(self, **kw) -> None:
+        self.response.sent.append({"edited": True, **kw})
+
+    async def original_response(self) -> "FakeMessage":
+        if self.message is None:
+            self.message = FakeChannel(7, self.user).post()
+        return self.message
 
     @property
     def last_text(self) -> str:

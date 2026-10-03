@@ -330,7 +330,7 @@ class CoupleCog(commands.Cog, name="Couple"):
             return
         rows = await self.repo.get_stats(interaction.user.id, partner.id)
         if not rows:
-            await respond(interaction, "No games played yet — try `/play start` 🎮", ephemeral=True)
+            await respond(interaction, "No games played yet — try `/play` 🎮", ephemeral=True)
             return
         me = interaction.user
         lines = []

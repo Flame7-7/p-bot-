@@ -6,7 +6,10 @@ from functools import lru_cache
 
 from dotenv import load_dotenv
 
+from utils.logging import get_logger
+
 load_dotenv()
+logger = get_logger(__name__)
 
 
 class ConfigError(RuntimeError):
@@ -20,6 +23,17 @@ def _env_bool(name: str, default: bool = False) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _env_int(name: str, default: int, *, minimum: int = 0) -> int:
+    raw = os.getenv(name)
+    if raw is None or not raw.strip():
+        return default
+    try:
+        return max(minimum, int(raw))
+    except ValueError:
+        logger.warning("%s=%r is not a whole number; using %d", name, raw, default)
+        return default
+
+
 @dataclass(frozen=True)
 class Config:
     # Discord
@@ -29,12 +43,16 @@ class Config:
     tmdb_api_key: str | None = None
     groq_api_key: str | None = None
 
+    # Reddit (official API). Without credentials the public JSON endpoints are used,
+    # which Reddit may throttle or block; see README.
+    reddit_client_id: str | None = None
+    reddit_client_secret: str | None = None
+    reddit_user_agent: str = "python:p-bot:1.0 (private couple bot)"
+
     # Database
     db_path: str = "bot.db"
 
     # Roleplay
-    default_cooldown: int = 15
-    affection_cooldown: int = 30
     relationship_bonus: float = 1.5
     # Register one slash command per roleplay action (/hug, /kiss, ...) in
     # addition to /roleplay. Off by default: Discord caps bots at 100 global
@@ -48,6 +66,7 @@ class Config:
     # DM games
     game_invite_timeout: int = 300    # seconds a game invite stays open
     game_idle_timeout: int = 1800     # seconds of inactivity before a game expires
+    game_bump_delay: int = 60         # quiet seconds in the DM before the game message moves to the bottom (0 = off)
 
     # Progression
     base_xp: int = 100
@@ -81,6 +100,10 @@ def get_config() -> Config:
         tenor_api_key=os.getenv("TENOR_API_KEY") or None,
         tmdb_api_key=os.getenv("TMDB_API_KEY") or None,
         groq_api_key=os.getenv("GROQ_API_KEY") or None,
+        reddit_client_id=os.getenv("REDDIT_CLIENT_ID") or None,
+        reddit_client_secret=os.getenv("REDDIT_CLIENT_SECRET") or None,
+        reddit_user_agent=os.getenv("REDDIT_USER_AGENT") or Config.reddit_user_agent,
+        game_bump_delay=_env_int("GAME_BUMP_DELAY", 60, minimum=0),
         db_path=os.getenv("DB_PATH", "bot.db"),
         legacy_roleplay_commands=_env_bool("LEGACY_ROLEPLAY_COMMANDS"),
         persona_model=os.getenv("PERSONA_MODEL", "openai/gpt-oss-120b"),

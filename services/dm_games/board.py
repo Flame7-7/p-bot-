@@ -49,6 +49,8 @@ def ttt_result(board: list[str | None]) -> str | None:
 
 class TicTacToe(TurnGame):
     key, title, emoji, stats_game = "ttt", "Tic-Tac-Toe", "⭕", "tictactoe"
+    category, blurb, duration = "Competitive", 'Classic 3×3, synced across both DMs', "~3–5 min"
+    difficulty = "Easy"
 
     def __init__(self, manager, p1, p2) -> None:
         super().__init__(manager, p1, p2)
@@ -96,6 +98,8 @@ C4_COLS, C4_ROWS = 7, 6
 
 class Connect4(TurnGame):
     key, title, emoji, stats_game = "connect4", "Connect 4", "🔴", "connect4"
+    category, blurb, duration = "Competitive", 'Drop discs, get four in a row', "~5–10 min"
+    difficulty = "Medium"
 
     def __init__(self, manager, p1, p2) -> None:
         super().__init__(manager, p1, p2)
@@ -161,6 +165,8 @@ RPS_BEATS = {"rock": "scissors", "paper": "rock", "scissors": "paper"}
 
 class RockPaperScissors(GameSession):
     key, title, emoji, stats_game = "rps", "Rock Paper Scissors", "✂️", "rps"
+    category, blurb, duration = "Chance", 'Best of 3 with secret picks', "~2 min"
+    difficulty = "Easy"
     WIN_AT = 2
 
     def __init__(self, manager, p1, p2) -> None:
@@ -220,6 +226,8 @@ class RockPaperScissors(GameSession):
 
 class MemoryGame(TurnGame):
     key, title, emoji, stats_game = "memory", "Memory", "🧠", "memory"
+    category, blurb, duration = "Brain", 'Match the emoji pairs, take turns', "~5 min"
+    difficulty = "Medium"
     FLIP_BACK_DELAY = 1.3
 
     def __init__(self, manager, p1, p2) -> None:
@@ -303,6 +311,8 @@ class Hangman(GameSession):
     """The first player secretly sets a word; the other guesses it letter by letter."""
 
     key, title, emoji, stats_game = "hangman", "Hangman", "🪢", "hangman"
+    category, blurb, duration = "Brain", 'One sets a secret word, the other guesses it', "~5 min"
+    difficulty = "Medium"
     MAX_WRONG = 6
 
     def __init__(self, manager, p1, p2) -> None:
@@ -389,6 +399,8 @@ class Hangman(GameSession):
 
 class NumberGuess(TurnGame):
     key, title, emoji, stats_game = "number", "Number Guessing", "🔢", "number"
+    category, blurb, duration = "Brain", 'Find the secret number together', "~3 min"
+    difficulty = "Easy"
     LOW, HIGH, MAX_GUESSES = 1, 100, 10
 
     def __init__(self, manager, p1, p2) -> None:
@@ -447,6 +459,8 @@ SUITS = ["♠️", "♥️", "♦️", "♣️"]
 
 class HigherLower(TurnGame):
     key, title, emoji, stats_game = "higherlower", "Higher or Lower", "🃏", "higherlower"
+    category, blurb, duration = "Chance", 'Call higher or lower and build a team streak', "~3 min"
+    difficulty = "Easy"
 
     def __init__(self, manager, p1, p2) -> None:
         super().__init__(manager, p1, p2)

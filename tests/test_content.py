@@ -56,3 +56,10 @@ def test_persona_prompt_loads_with_placeholders():
 def test_all_content_files_exist_and_nonempty():
     for p in Path(CONTENT_DIR).rglob("*.md"):
         assert p.read_text(encoding="utf-8").strip(), p
+
+
+def test_roleplay_has_no_cooldowns():
+    import pathlib
+    for path in pathlib.Path(CONTENT_DIR, "roleplay").glob("*.md"):
+        assert "cooldown" not in path.read_text(encoding="utf-8").lower(), path
+    assert not hasattr(next(iter(get_all_actions().values())), "cooldown_seconds")

@@ -274,6 +274,22 @@ class JournalEntry(Base):
     __table_args__ = (Index("ix_couple_journal_pair", "user_low_id", "user_high_id"),)
 
 
+class ActiveGameMessage(Base):
+    """The Discord message currently showing a live DM game, one row per player.
+
+    Games live in memory, so after a crash/restart these rows are the only trace of
+    messages whose buttons no longer work; startup cleanup disables them and clears the table.
+    """
+
+    __tablename__ = "active_game_messages"
+
+    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    channel_id: Mapped[int] = mapped_column(Integer)
+    message_id: Mapped[int] = mapped_column(Integer)
+    game_key: Mapped[str] = mapped_column(String(40))
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
 class CustomCommand(Base):
     """Guild-scoped, database-backed user/admin-created slash command."""
 

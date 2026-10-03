@@ -19,11 +19,11 @@ PAGE_CHARS = 3600
 # Display order; categories that have no visible commands are never shown.
 CATEGORY_ORDER = [
     "Couple", "Couple Games", "Persona", "Roleplay", "Economy", "Games", "Movies",
-    "Achievements", "Profile", "Habits", "Utility", "Custom", "Moderation", "Owner",
+    "Achievements", "Profile", "Habits", "Reddit", "Utility", "Custom", "Moderation", "Owner",
 ]
 CATEGORY_EMOJI = {
     "Couple": "💕", "Couple Games": "🎮", "Persona": "💬", "Roleplay": "🎭", "Economy": "💰",
-    "Games": "🎲", "Movies": "🎬", "Achievements": "🏆", "Profile": "👤", "Habits": "🌱",
+    "Games": "🎲", "Movies": "🎬", "Achievements": "🏆", "Profile": "👤", "Habits": "🌱", "Reddit": "🌐",
     "Utility": "⚙️", "Custom": "🧩", "Moderation": "🛡️", "Owner": "👑",
 }
 

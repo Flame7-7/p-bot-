@@ -17,7 +17,7 @@ VALID_GENDERS = ("male", "female", "non-binary")
 class RoleplayProfileRepository:
     """Persists each user's role (pronoun choice) in the SQLite database via
     database/connection.py, using the same session-per-call pattern as the
-    other repositories. There is no consent/verification step.
+    other repositories.
     """
 
     async def get(self, user_id: int) -> RoleplayProfile | None:

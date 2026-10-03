@@ -28,7 +28,6 @@ class ActionConfig:
     category: str
     affection_gain: int
     xp_gain: int
-    cooldown_seconds: int
     response_templates: list[str]
     gif_category: str
     self_targetable: bool = False
@@ -132,7 +131,6 @@ def load_actions() -> None:
                 category=meta.get("category", "social"),
                 affection_gain=_to_int(meta.get("affection"), 2),
                 xp_gain=_to_int(meta.get("xp"), 5),
-                cooldown_seconds=_to_int(meta.get("cooldown"), 15),
                 response_templates=list(rec.items),
                 gif_category=meta.get("gif", rec.name),
                 self_targetable=meta.get("self", "no").lower() == "yes",

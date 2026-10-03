@@ -33,6 +33,9 @@ The database (`bot.db`) is created and migrated automatically on start. Then, in
 | `PERSONA_MODEL` | | Model for persona replies (default `openai/gpt-oss-120b`) |
 | `TENOR_API_KEY` | | Automatic GIF fallback |
 | `TMDB_API_KEY` | | `/movie recommend` |
+| `GAME_BUMP_DELAY` | | Quiet seconds before a game message moves to the bottom of the DM (default `60`, `0` = off) |
+| `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` | for `/reddit` | Reddit API app credentials (see *Reddit*); optional but recommended |
+| `REDDIT_USER_AGENT` | | Identifies the bot to Reddit, e.g. `python:p-bot:1.0 (by /u/yourname)` |
 | `LEGACY_ROLEPLAY_COMMANDS` | | `true` also registers `/hug`, `/kiss`, … as separate commands (see below) |
 
 Missing required variables stop startup with a clear message instead of a traceback.
@@ -45,23 +48,32 @@ Run **`/help`** for the live list — it is generated from the commands actually
 
 ### 🎮 Couple games (in DMs)
 
-`/play start <game>` sends the game to **both partners' DMs**. Requires a linked partner (`/propose`).
+**`/play`** opens a menu: pick a category (🧠 Brain · 🎲 Chance · ❤️ Relationship · 😂 Funny · ⚔️ Competitive), pick a game (each shows its description, estimated time, players and difficulty), press **Play**. The game is sent to **both partners' DMs**. Requires a linked partner (`/propose`).
 
-| Game | | Game | |
-|---|---|---|---|
-| ⭕ Tic-Tac-Toe | `/ttt` | 🔍 Who Knows Who Better? | answer, then guess each other |
-| 🔴 Connect 4 | `/connect4` | 💝 Guess My Favourite | free-text, fuzzy matched |
-| ✂️ Rock Paper Scissors | best of 3, secret picks | 🧩 Trivia | higher score wins |
-| 🧠 Memory | emoji pairs | 😎 Emoji Guessing | decode first |
-| 🪢 Hangman | one sets a word | 🔤 Word Guessing | unscramble first |
-| 🔢 Number Guessing | find it together | 🃏 Higher or Lower | team streak |
-| 🎭 Truth or Dare | `/truthordare` | 🤍 Would You Rather | `/wyr` |
-| ⚡ This or That | | 🙋 Who's More Likely To… | |
-| 💘 Compatibility Quiz | match % | 🌙 Pick One for Tonight | tie-break included |
+`/play game:<name>` skips the menu (autocomplete), `/gamequit` leaves the current game, and the old shortcuts `/ttt`, `/connect4`, `/wyr`, `/truthordare` still work.
 
-`/play list` shows them in Discord, `/play quit` leaves the current game.
+| Category | Games |
+|---|---|
+| 🧠 Brain | Memory, Hangman, Number Guessing, Trivia, Emoji Guessing, Word Guessing |
+| 🎲 Chance | Rock Paper Scissors, Higher or Lower |
+| ❤️ Relationship | Compatibility Quiz, Who Knows Who Better?, Guess My Favourite, Pick One for Tonight |
+| 😂 Funny | Would You Rather, This or That, Who's More Likely To…, Truth or Dare |
+| ⚔️ Competitive | Tic-Tac-Toe, Connect 4 |
 
-**Guarantees** (all handled once, in `services/dm_games/session.py`): only the two players can press a game's buttons; each user can be in one game at a time; clicks are processed under a per-game lock; games expire after `game_idle_timeout` (30 min) of inactivity and buttons are disabled when a game ends, expires, is quit, or the bot shuts down; if a DM can't be delivered the game aborts cleanly; scores are kept per couple (`/couple stats`).
+The menu is built from the game classes themselves, so a new game appears in it automatically (see *Adding a game*).
+
+**Guarantees** (handled once, in `services/dm_games/session.py`): only the two players can press a game's buttons; each user can be in one game at a time; clicks are processed under a per-game lock; games expire after `game_idle_timeout` (30 min) of inactivity and buttons are disabled when a game ends, expires, is quit, or the bot shuts down; if a DM can't be delivered the game aborts cleanly; scores are kept per couple (`/couple stats`).
+
+#### Game message bumping
+
+Chatting in the DM pushes the game message up the conversation, so the bot moves it back down:
+
+- Every message in a player's DM (yours, hers, or the bot's relay of it) restarts a quiet timer for that DM. After `GAME_BUMP_DELAY` seconds (default **60**) with no new messages, the game is re-posted at the bottom — **only if something was said after it**; a game nobody has talked over is left alone.
+- Using the game (a move, a button, an answer) restarts the timer too. Game state is untouched: the new message is rendered from the live session with fresh buttons, the old message is deleted (or, if Discord won't let it be deleted, disabled), and the stored message id is updated. Old copies can't be clicked.
+- It all runs on **one** background loop owned by the game manager (no task per message or per game); chat activity only updates a timestamp. When a game ends, is quit, or expires, its timers are dropped.
+- If a player deletes the game message, it is re-posted. If a re-post fails (DMs closed), the old message is kept and the bot backs off.
+- Message ids are stored in the database (`active_game_messages`). Games live in memory, so after a restart the bot disables the leftover game messages ("this game ended because the bot restarted") instead of leaving dead buttons.
+- `GAME_BUMP_DELAY=0` turns bumping off.
 
 ### 💕 `/couple`
 
@@ -77,9 +89,9 @@ One command instead of dozens:
 
 Start typing in `action` for autocomplete; `/help` → Roleplay lists every action by category. In a DM with the bot, `target` defaults to your partner and the result is mirrored to them.
 
-`/role` sets the pronouns used in roleplay messages (optional, no setup or consent step).
+`/role` sets the pronouns used in roleplay messages (optional).
 
-`/intimate` holds the adults-only actions. It only works in DMs or age-restricted channels, and is hidden from `/help` elsewhere.
+`/intimate` holds the adults-only actions. It only works in DMs or age-restricted server channels — Discord's own rule for adult content — and is hidden from `/help` elsewhere. The bot has no consent or verification step of its own; it's a private two-person bot.
 
 Want the old per-action commands too? Set `LEGACY_ROLEPLAY_COMMANDS=true` — they are generated from the same content files. Mind Discord's 100 global command limit.
 
@@ -94,6 +106,16 @@ Persona **no longer works in DMs.** It lives in one channel per server:
 The bot ignores every other channel and all DMs. `/persona status` shows the current channel and any permission problems; `/persona disable` turns it off. Deleting the channel disables persona for that server automatically. Existing persona text and AFK settings are kept — they are per user and unchanged.
 
 DMs between partners still work as a plain relay (text, gifs, images are forwarded to the partner).
+
+### 🌐 Reddit
+
+`/reddit subreddit:cats` shows a post as an embed (title, image, ⬆️ upvotes, 💬 comments, 👤 author, **View Post** link) with **⬅️ Previous / ➡️ Next / 🔄 Random** buttons. Options: `sort` = hot · top · new · random, `timeframe` for top. Image and gallery posts show the picture; text posts a preview; video and link posts show a preview image where Reddit has one plus a link. Removed/deleted posts are skipped.
+
+- **NSFW:** age-restricted posts are shown **only in age-restricted server channels** — never in DMs or ordinary channels. If a subreddit has nothing else to show, the bot says so.
+- **Setup:** go to <https://www.reddit.com/prefs/apps>, create an app (type *script*), and put its id and secret in `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET`, plus a descriptive `REDDIT_USER_AGENT`. The bot then uses Reddit's official OAuth API (app-only token, refreshed automatically). Without credentials it falls back to Reddit's public `.json` endpoints, which Reddit often throttles or blocks — expect errors there.
+- **Efficiency:** a listing is cached for 5 minutes and shared; the buttons only page through it, so pressing them never calls Reddit. Concurrent requests for the same subreddit share one call, and Reddit's rate-limit headers are honoured.
+- **Errors** (unknown/private/banned subreddit, invalid name, rate limit, timeout, outage, empty feed) all produce a short, friendly message.
+- The API code is `services/reddit_service.py`; the Discord side is `cogs/reddit/reddit_cog.py`.
 
 ### Other features
 
@@ -121,7 +143,6 @@ category: affection        # affection | playful | emotional | social
 description: Do my action
 affection: 10
 xp: 15
-cooldown: 30
 gif: myaction
 target: required           # or optional
 self: no                   # may the user target themselves?
@@ -166,11 +187,11 @@ tests/                  pytest suite
 docs/command-ideas.md   brainstorm of future features (not implemented docs)
 ```
 
-**Adding a game:** subclass `GameSession` (or `TurnGame`) in `services/dm_games/`, implement `render(uid)`, and add one line to `registry.py`. Locking, ownership checks, timeouts and scoring come from the base class; `/play`, `/play list` and `/couple stats` pick it up automatically.
+**Adding a game:** subclass `GameSession` (or `TurnGame`) in `services/dm_games/`, implement `render(uid)`, and set `category`, `blurb`, `duration` (and optionally `difficulty`) on the class. If it's in a new module, add the module name to `GAME_MODULES` in `registry.py`. Locking, ownership checks, timeouts, scoring and message bumping come from the base class; `/play`, `/help` and `/couple stats` pick it up automatically.
 
 ## Database
 
-Tables are created automatically; column additions to older databases run on startup (idempotent) — see `database/connection.py`. This update **adds** four tables (`persona_channels`, `couple_game_stats`, `couple_milestones`, `couple_journal`) and changes nothing existing, so upgrading is just restarting. Back up `bot.db` first as usual.
+Tables are created automatically; column additions to older databases run on startup (idempotent) — see `database/connection.py`. The tables added so far are `persona_channels`, `couple_game_stats`, `couple_milestones`, `couple_journal` and `active_game_messages`. Nothing existing is altered, so upgrading is just restarting. The unused `roleplay_profiles.consent_given` / `consented_at` columns remain in old databases (SQLite can't drop them safely) and are never read or written. Back up `bot.db` first as usual.
 
 ## Development
 

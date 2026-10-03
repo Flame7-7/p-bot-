@@ -29,8 +29,9 @@ def test_roleplay_action_end_to_end(tmp_path, monkeypatch):
         svc = RoleplayService()
         res = await svc.execute("hug", member(1, "Him"), member(2, "Her"), 10)
         assert not isinstance(res, str), res
-        again = await svc.execute("hug", member(1, "Him"), member(2, "Her"), 10)
-        assert isinstance(again, str) and "ooldown" in again or "wait" in again.lower()
+        for _ in range(5):  # no cooldown: the same action can be repeated immediately
+            again = await svc.execute("hug", member(1, "Him"), member(2, "Her"), 10)
+            assert not isinstance(again, str), again
         missing = await svc.execute("hug", member(1, "Him"), None, 10)
         assert isinstance(missing, str)
         assert isinstance(await svc.execute("nonexistent", member(1, "Him"), member(2, "Her"), 10), str)

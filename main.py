@@ -32,6 +32,7 @@ COGS = [
     "cogs.presence.presence_cog",
     "cogs.dmgames.play_cog",
     "cogs.couple.couple_cog",
+    "cogs.reddit.reddit_cog",
     "cogs.owner.owner_cog",
     "cogs.owner.tasks_cog",
     "cogs.help.help_cog",

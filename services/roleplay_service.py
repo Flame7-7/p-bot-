@@ -12,7 +12,6 @@ from repositories.user_repository import UserRepository
 from services.action_registry import get_action
 from services.gif_service import GifService
 from utils.config import get_config
-from utils.cooldowns import check_cooldown, set_cooldown
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -59,11 +58,6 @@ class RoleplayService:
         if target and target.bot:
             return "You can't use this action on a bot!"
 
-        # Check cooldown (in-memory)
-        remaining = check_cooldown(author.id, action_name)
-        if remaining > 0:
-            return f"⏳ Cooldown! Try again in **{remaining}s**."
-
         # Check target opt-out
         if target:
             settings = await self.user_repo.get_settings(target.id)
@@ -102,9 +96,6 @@ class RoleplayService:
             affection_given=affection,
             xp_given=action.xp_gain,
         )
-
-        # Set cooldown
-        set_cooldown(author.id, action_name, action.cooldown_seconds)
 
         # Check achievements
         total = await self.interaction_repo.get_count(author.id)
