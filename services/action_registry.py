@@ -107,7 +107,11 @@ def get_by_category(category: str) -> list[ActionConfig]:
     return [a for a in _registry.values() if a.category == category]
 
 # Content lives in content/roleplay/*.md (see utils/content.py for the format).
-ACTION_FILES = ("roleplay/actions.md", "roleplay/intimate.md")
+ACTION_FILES = (
+    "roleplay/actions.md",
+    "roleplay/intimate.md",
+    "roleplay/female_intimate.md",
+)
 
 
 def _to_int(value: str | None, default: int) -> int:

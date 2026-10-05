@@ -98,6 +98,18 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
         await self._dispatch(interaction, action, target)
 
     @app_commands.command(
+        name="intimate_female",
+        description="Adults-only feminine-POV romantic actions (DMs or age-restricted channels)",
+        extras={"nsfw_only": True},
+    )
+    @app_commands.describe(target="Who to do it to")
+    async def intimate_female(self, interaction: discord.Interaction, target: discord.User | None = None) -> None:
+        if not self._channel_allows_adult_content(interaction):
+            await respond(interaction, "🔞 Use this in DMs or an age-restricted channel.", ephemeral=True)
+            return
+        await self._dispatch(interaction, "femaleintimate", target, force_author_gender="female")
+
+    @app_commands.command(
         name="intimate",
         description="Adults-only actions (DMs or age-restricted channels)",
         extras={"nsfw_only": True},
@@ -123,14 +135,26 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
             return True
         return bool(getattr(channel, "is_nsfw", lambda: False)())
 
-    async def _dispatch(self, interaction: discord.Interaction, action_name: str, target: discord.User | None) -> None:
+    async def _dispatch(
+        self,
+        interaction: discord.Interaction,
+        action_name: str,
+        target: discord.User | None,
+        force_author_gender: str | None = None,
+    ) -> None:
         try:
-            await self._run(interaction, action_name, target)
+            await self._run(interaction, action_name, target, force_author_gender=force_author_gender)
         except Exception:
             logger.exception("roleplay action %s failed", action_name)
             await respond(interaction, GENERIC_ERROR, ephemeral=True)
 
-    async def _run(self, interaction: discord.Interaction, action_name: str, target: discord.User | None) -> None:
+    async def _run(
+        self,
+        interaction: discord.Interaction,
+        action_name: str,
+        target: discord.User | None,
+        force_author_gender: str | None = None,
+    ) -> None:
         await interaction.response.defer()
 
         # In a DM there's nobody to @mention, so no target means "my partner".
@@ -144,6 +168,7 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
             author=interaction.user,  # type: ignore[arg-type]
             target=target,  # type: ignore[arg-type]
             guild_id=interaction.guild_id or 0,
+            force_author_gender=force_author_gender,
         )
         if isinstance(result, str):
             await interaction.followup.send(result, ephemeral=True)

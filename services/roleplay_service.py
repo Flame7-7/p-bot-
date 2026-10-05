@@ -45,6 +45,7 @@ class RoleplayService:
         author: discord.Member,
         target: discord.Member | None,
         guild_id: int,
+        force_author_gender: str | None = None,
     ) -> ActionResult | str:
         action = get_action(action_name)
         if not action:
@@ -117,7 +118,7 @@ class RoleplayService:
         message = action.get_response(
             author.display_name,
             target_name,
-            author_gender=author_profile.gender if author_profile else None,
+            author_gender=force_author_gender or (author_profile.gender if author_profile else None),
             target_gender=target_profile.gender if target_profile else None,
         )
 
