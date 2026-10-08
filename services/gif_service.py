@@ -18,10 +18,30 @@ class GifService:
     def __init__(self) -> None:
         self.config = get_config()
 
-    async def get_random_gif(self, category: str) -> str | None:
+    async def get_random_gif(self, category: str, fallback: str | None = None) -> str | None:
+        """A random gif for ``category``.
+
+        ``fallback`` is a second category used while ``category`` has no gifs of its own
+        (e.g. ``fem_kiss`` borrows from ``kiss`` until dedicated gifs are uploaded).
+        """
+        url = await self._db_gif(category)
+        if url:
+            return url
+        if fallback and fallback != category:
+            url = await self._db_gif(fallback)
+            if url:
+                return url
+
+        # Tenor fallback
+        if self.config.tenor_api_key:
+            return await self._fetch_tenor(fallback or category)
+
+        return None
+
+    async def _db_gif(self, category: str) -> str | None:
         cache_key = f"gifs:{category}"
         cached = cache_get(cache_key)
-        if cached and isinstance(cached, list) and cached:
+        if cached and isinstance(cached, list):
             return self._weighted_choice(cached)
 
         async with get_session() as session:
@@ -35,13 +55,6 @@ class GifService:
             data = [{"url": g.url, "weight": g.weight} for g in gifs]
             cache_set(cache_key, data, ttl=3600)
             return self._weighted_choice(data)
-
-        # Tenor fallback
-        if self.config.tenor_api_key:
-            url = await self._fetch_tenor(category)
-            if url:
-                return url
-
         return None
 
     def _weighted_choice(self, gifs: list[dict]) -> str:

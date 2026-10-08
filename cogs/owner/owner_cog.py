@@ -25,11 +25,11 @@ _GIF_URL_RE = re.compile(r"^https?://\S+\.gif(\?\S*)?$", re.IGNORECASE)
 async def _category_autocomplete(
     interaction: discord.Interaction, current: str
 ) -> list[app_commands.Choice[str]]:
-    # There are 62 gif categories -- too many for a static Choice list
+    # There are 70+ gif categories -- too many for a static Choice list
     # (Discord caps those at 25), so this uses autocomplete instead,
-    # which supports searching a much longer list.
+    # which supports searching a much longer list (try "fem" for the female intimate ones).
     categories = sorted({a.gif_category for a in get_all_actions().values()})
-    current = current.lower()
+    current = current.lower().strip()
     matches = [c for c in categories if current in c.lower()]
     return [app_commands.Choice(name=c, value=c) for c in matches[:25]]
 

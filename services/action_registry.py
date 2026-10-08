@@ -30,6 +30,7 @@ class ActionConfig:
     xp_gain: int
     response_templates: list[str]
     gif_category: str
+    gif_fallback: str | None = None  # shared category used while gif_category has no gifs
     self_targetable: bool = False
     requires_target: bool = True
     description: str = ""
@@ -134,13 +135,23 @@ def load_actions() -> None:
                 logger.warning("action %r in %s has no response templates; skipped", rec.name, path)
                 continue
             meta = rec.meta
+            category = meta.get("category", "social")
+            gif_category = meta.get("gif", rec.name)
+            gif_fallback = None
+            if category == "intimate_female":
+                # Female actions get their own gif category (named after the action, e.g.
+                # ``fem_kiss``) so they can be filled separately via /gif add. Until they have
+                # gifs of their own they borrow from the shared category named by ``gif:``.
+                gif_fallback = gif_category if gif_category != rec.name else None
+                gif_category = rec.name
             register(ActionConfig(
                 name=rec.name,
-                category=meta.get("category", "social"),
+                category=category,
                 affection_gain=_to_int(meta.get("affection"), 2),
                 xp_gain=_to_int(meta.get("xp"), 5),
                 response_templates=list(rec.items),
-                gif_category=meta.get("gif", rec.name),
+                gif_category=gif_category,
+                gif_fallback=gif_fallback,
                 self_targetable=meta.get("self", "no").lower() == "yes",
                 requires_target=meta.get("target", "required").lower() != "optional",
                 description=meta.get("description", ""),

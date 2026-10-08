@@ -108,7 +108,7 @@ class RoleplayService:
         )
 
         # GIF
-        gif_url = await self.gif_service.get_random_gif(action.gif_category)
+        gif_url = await self.gif_service.get_random_gif(action.gif_category, fallback=action.gif_fallback)
 
         # Response text -- a role is optional: a user who never ran /role
         # just gets neutral pronouns.
