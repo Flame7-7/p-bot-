@@ -7,7 +7,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from services.action_registry import get_all_actions
+from services.action_registry import ADULT_CATEGORIES, get_all_actions
 from utils.interactions import OwnedView, respond
 from utils.logging import get_logger
 
@@ -19,12 +19,12 @@ PAGE_CHARS = 3600
 # Display order; categories that have no visible commands are never shown.
 CATEGORY_ORDER = [
     "Couple", "Couple Games", "Persona", "Roleplay", "Economy", "Games", "Movies",
-    "Achievements", "Profile", "Habits", "Reddit", "Utility", "Custom", "Moderation", "Owner",
+    "Achievements", "Profile", "Habits", "Reddit", "Utility", "Moderation", "Owner",
 ]
 CATEGORY_EMOJI = {
     "Couple": "💕", "Couple Games": "🎮", "Persona": "💬", "Roleplay": "🎭", "Economy": "💰",
     "Games": "🎲", "Movies": "🎬", "Achievements": "🏆", "Profile": "👤", "Habits": "🌱", "Reddit": "🌐",
-    "Utility": "⚙️", "Custom": "🧩", "Moderation": "🛡️", "Owner": "👑",
+    "Utility": "⚙️", "Moderation": "🛡️", "Owner": "👑",
 }
 
 
@@ -65,9 +65,6 @@ def _category_of(cmd: app_commands.Command | app_commands.Group) -> str:
         category = getattr(binding, "help_category", None)
         if category:
             return category[1]
-        module_cat = getattr(node, "module", "") or ""
-        if "custom_commands" in module_cat:
-            return "Custom"
     return "Utility"
 
 
@@ -123,7 +120,7 @@ def collect(
     if roleplay:
         grouped: dict[str, list[str]] = defaultdict(list)
         for action in get_all_actions().values():
-            if action.category != "intimate":
+            if action.category not in ADULT_CATEGORIES:
                 grouped[action.category].append(action.name)
         for cat, names in grouped.items():
             roleplay.notes.append(f"**{cat.title()}:** " + ", ".join(sorted(names)))

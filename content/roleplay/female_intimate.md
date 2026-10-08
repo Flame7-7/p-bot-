@@ -152,7 +152,7 @@ self: no
 - {target_mention} — **{author}** raises her hand and brings it down hard on {target_mention}'s butt, leaving a red mark. 💥
 - {target_mention} — **{author}** spanks {target_mention} firmly, enjoying the power and the sound of her hand on their skin. 😏
 
-## fem Pegging
+## fem_pegging
 category: intimate_female
 description: Peg someone (Female POV)
 affection: 55
@@ -181,7 +181,7 @@ self: no
 - {target_mention} — **{author}** controls {target_mention} with a leash, enjoying their complete submission to her will. 🌶️
 
 
-## femdom
+## fem_dom
 category: intimate_female
 description: Assert total dominance and control over someone (Female POV)
 affection: 45

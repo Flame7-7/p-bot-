@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from repositories.relationship_repository import RelationshipRepository
 from repositories.roleplay_profile_repository import RoleplayProfileRepository
-from services.action_registry import get_action, get_all_actions
+from services.action_registry import ADULT_CATEGORIES, get_action, get_all_actions
 from services.roleplay_service import RoleplayService
 from utils.config import get_config
 from utils.interactions import GENERIC_ERROR, respond, resolve_user, safe_dm
@@ -16,19 +16,22 @@ from views.embeds import build_achievement_embed, build_action_embed, build_leve
 logger = get_logger(__name__)
 
 INTIMATE = "intimate"
+INTIMATE_FEMALE = "intimate_female"
 
 
-def _is_intimate(name: str) -> bool:
+def _in_category(name: str, category: str) -> bool:
     action = get_action(name)
-    return bool(action and action.category == INTIMATE)
+    return bool(action and action.category == category)
 
 
-def _autocomplete_for(intimate: bool):
+def _autocomplete_for(category: str | None):
+    """Autocomplete for one adult category, or (None) for every non-adult action."""
     async def autocomplete(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
         current = current.lower().strip()
         matches = [
             a for a in get_all_actions().values()
-            if (a.category == INTIMATE) == intimate and (current in a.name or current in a.description.lower())
+            if (a.category == category if category else a.category not in ADULT_CATEGORIES)
+            and (current in a.name or current in a.description.lower())
         ]
         matches.sort(key=lambda a: (not a.name.startswith(current), a.name))
         return [
@@ -68,8 +71,8 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
         Discord allows 100 global slash commands; check the count before enabling.
         """
         for action in get_all_actions().values():
-            if self.bot.tree.get_command(action.name):
-                continue
+            if action.category in ADULT_CATEGORIES or self.bot.tree.get_command(action.name):
+                continue  # adult actions stay behind their channel-gated commands
             cmd = self._build_legacy(action.name, action.description)
             self.bot.tree.add_command(cmd)
             self._legacy.append(cmd)
@@ -86,9 +89,10 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
 
     @app_commands.command(name="roleplay", description="Hug, kiss, cuddle, poke… pick an action (type to search)")
     @app_commands.describe(action="What to do", target="Who to do it to (in DMs it defaults to your partner)")
-    @app_commands.autocomplete(action=_autocomplete_for(False))
+    @app_commands.autocomplete(action=_autocomplete_for(None))
     async def roleplay(self, interaction: discord.Interaction, action: str, target: discord.User | None = None) -> None:
-        if _is_intimate(action) or get_action(action) is None:
+        found = get_action(action)
+        if found is None or found.category in ADULT_CATEGORIES:
             await respond(
                 interaction,
                 "I don't know that action — start typing in the `action` field to see the list.",
@@ -98,34 +102,43 @@ class RoleplayCog(commands.Cog, name="Roleplay"):
         await self._dispatch(interaction, action, target)
 
     @app_commands.command(
-        name="intimate_female",
-        description="Adults-only feminine-POV romantic actions (DMs or age-restricted channels)",
-        extras={"nsfw_only": True},
-    )
-    @app_commands.describe(target="Who to do it to")
-    async def intimate_female(self, interaction: discord.Interaction, target: discord.User | None = None) -> None:
-        if not self._channel_allows_adult_content(interaction):
-            await respond(interaction, "🔞 Use this in DMs or an age-restricted channel.", ephemeral=True)
-            return
-        await self._dispatch(interaction, "femaleintimate", target, force_author_gender="female")
-
-    @app_commands.command(
         name="intimate",
         description="Adults-only actions (DMs or age-restricted channels)",
         extras={"nsfw_only": True},
     )
     @app_commands.describe(action="What to do", target="Who to do it to (in DMs it defaults to your partner)")
-    @app_commands.autocomplete(action=_autocomplete_for(True))
+    @app_commands.autocomplete(action=_autocomplete_for(INTIMATE))
     async def intimate(self, interaction: discord.Interaction, action: str, target: discord.User | None = None) -> None:
-        if not _is_intimate(action):
+        await self._adult(interaction, action, target, INTIMATE)
+
+    @app_commands.command(
+        name="intimate_female",
+        description="Adults-only feminine-POV actions (DMs or age-restricted channels)",
+        extras={"nsfw_only": True},
+    )
+    @app_commands.describe(action="What to do", target="Who to do it to (in DMs it defaults to your partner)")
+    @app_commands.autocomplete(action=_autocomplete_for(INTIMATE_FEMALE))
+    async def intimate_female(self, interaction: discord.Interaction, action: str, target: discord.User | None = None) -> None:
+        await self._adult(interaction, action, target, INTIMATE_FEMALE, force_author_gender="female")
+
+    # ── internals ────────────────────────────────────────────────────────────
+
+    async def _adult(
+        self,
+        interaction: discord.Interaction,
+        action: str,
+        target: discord.User | None,
+        category: str,
+        *,
+        force_author_gender: str | None = None,
+    ) -> None:
+        if not _in_category(action, category):
             await respond(interaction, "I don't know that action — start typing to search.", ephemeral=True)
             return
         if not self._channel_allows_adult_content(interaction):
             await respond(interaction, "🔞 Use this in DMs or an age-restricted channel.", ephemeral=True)
             return
-        await self._dispatch(interaction, action, target)
-
-    # ── internals ────────────────────────────────────────────────────────────
+        await self._dispatch(interaction, action, target, force_author_gender=force_author_gender)
 
     @staticmethod
     def _channel_allows_adult_content(interaction: discord.Interaction) -> bool:

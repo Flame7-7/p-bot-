@@ -91,7 +91,7 @@ Start typing in `action` for autocomplete; `/help` → Roleplay lists every acti
 
 `/role` sets the pronouns used in roleplay messages (optional).
 
-`/intimate` holds the adults-only actions. It only works in DMs or age-restricted server channels — Discord's own rule for adult content — and is hidden from `/help` elsewhere. The bot has no consent or verification step of its own; it's a private two-person bot.
+`/intimate` and `/intimate_female` hold the adults-only actions (the second one uses feminine-POV text and always uses she/her for you). Both take an `action` with autocomplete. It only works in DMs or age-restricted server channels — Discord's own rule for adult content — and is hidden from `/help` elsewhere. The bot has no consent or verification step of its own; it's a private two-person bot.
 
 Want the old per-action commands too? Set `LEGACY_ROLEPLAY_COMMANDS=true` — they are generated from the same content files. Mind Discord's 100 global command limit.
 
@@ -105,7 +105,7 @@ Persona **no longer works in DMs.** It lives in one channel per server:
 
 The bot ignores every other channel and all DMs. `/persona status` shows the current channel and any permission problems; `/persona disable` turns it off. Deleting the channel disables persona for that server automatically. Existing persona text and AFK settings are kept — they are per user and unchanged.
 
-DMs between partners still work as a plain relay (text, gifs, images are forwarded to the partner).
+DMs between partners still work as a relay (text, gifs, images are forwarded to the partner). **Replies carry over:** if you reply to a message in your DM, your partner sees it as a reply to the matching message in theirs — whether you replied to your own earlier message or to one of theirs. Replies to messages the bot doesn't relay (games, older than 30 days) arrive as normal messages.
 
 ### 🌐 Reddit
 
@@ -119,7 +119,7 @@ DMs between partners still work as a plain relay (text, gifs, images are forward
 
 ### Other features
 
-Relationships (`/propose`, `/partner`, `/breakup`, `/anniversary`), profiles and stats, achievements, economy (`/daily`, `/top`, `/slots`, `/blackjack`, `/heist`…), server games, `/movie`, `/nofap`, per-user `/settings`, per-server custom commands (`/addcommand`, …), and an owner-only `/resetuser`.
+Relationships (`/propose`, `/partner`, `/breakup`, `/anniversary`), profiles and stats, achievements, economy (`/daily`, `/top`, `/slots`, `/blackjack`, `/heist`…), server games, `/movie`, `/nofap`, per-user `/settings`, and an owner-only `/resetuser`.
 
 ---
 
@@ -130,7 +130,8 @@ Everything text-heavy lives in `content/` as Markdown:
 ```
 content/
 ├── roleplay/actions.md     # every /roleplay action: stats + response templates
-├── roleplay/intimate.md    # /intimate actions
+├── roleplay/intimate.md          # /intimate actions
+├── roleplay/female_intimate.md   # /intimate_female actions
 ├── couple/*.md             # truth, dare, would_you_rather, trivia, compliments, date ideas, …
 └── persona/system_prompt.md
 ```

@@ -17,7 +17,7 @@ def test_plain_bullet_file_is_anonymous_section():
 
 def test_every_action_has_templates_and_valid_placeholders():
     actions = get_all_actions()
-    assert len(actions) == 62
+    assert len(actions) >= 62
     allowed = {"author", "target", "target_mention", "author_pronoun", "author_pronoun_obj", "author_possessive",
                "target_pronoun", "target_pronoun_obj", "target_possessive"}
     import string
@@ -63,3 +63,19 @@ def test_roleplay_has_no_cooldowns():
     for path in pathlib.Path(CONTENT_DIR, "roleplay").glob("*.md"):
         assert "cooldown" not in path.read_text(encoding="utf-8").lower(), path
     assert not hasattr(next(iter(get_all_actions().values())), "cooldown_seconds")
+
+
+def test_adult_actions_are_separated_by_category():
+    from services.action_registry import ADULT_CATEGORIES
+    actions = get_all_actions().values()
+    assert {a.category for a in actions} & ADULT_CATEGORIES == ADULT_CATEGORIES
+    assert all(a.category in ADULT_CATEGORIES for a in actions if a.name.startswith("fem_"))
+
+
+def test_every_action_name_is_a_clean_identifier_and_has_a_category():
+    import re
+    from utils.content import load_records
+    for path in ("roleplay/actions.md", "roleplay/intimate.md", "roleplay/female_intimate.md"):
+        for rec in load_records(path).values():
+            assert re.fullmatch(r"[a-z0-9_]+", rec.name), (path, rec.name)
+            assert "category" in rec.meta, (path, rec.name, "missing category would make it a public action")

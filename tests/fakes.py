@@ -13,16 +13,19 @@ class FakeChannel:
         self.id, self.owner = cid, owner
         self.messages: list[FakeMessage] = []
         self.fail_send: Exception | None = None
+        self.reject_reference: Exception | None = None
 
-    async def send(self, content=None, embed=None, view=None, **kw) -> "FakeMessage":
+    async def send(self, content=None, embed=None, view=None, reference=None, **kw) -> "FakeMessage":
         if self.fail_send:
             raise self.fail_send
-        return self.post(embed=embed, view=view, content=content)
+        if reference is not None and self.reject_reference is not None:
+            raise self.reject_reference
+        return self.post(embed=embed, view=view, content=content, reference=reference)
 
-    def post(self, embed=None, view=None, content=None, author_is_bot=True) -> "FakeMessage":
+    def post(self, embed=None, view=None, content=None, author_is_bot=True, reference=None) -> "FakeMessage":
         FakeMessage._next += 1
         m = FakeMessage(self, FakeMessage._next)
-        m.embed, m.view, m.content = embed, view, content
+        m.embed, m.view, m.content, m.reference = embed, view, content, reference
         self.messages.append(m)
         return m
 
@@ -40,6 +43,7 @@ class FakeMessage:
         self.embed: discord.Embed | None = None
         self.view: discord.ui.View | None = None
         self.content: str | None = None
+        self.reference = None
         self.deleted = False
         self.fail_delete: Exception | None = None
         self.jump_url = f"https://discord.com/channels/@me/{channel.id}/{mid}"
@@ -67,6 +71,8 @@ class _Resp:
 class FakeUser:
     def __init__(self, uid: int, name: str) -> None:
         self.id, self.display_name = uid, name
+        self.bot = False
+        self.display_avatar = type("Av", (), {"url": "http://x/a.png"})()
         self.channel = FakeChannel(uid * 100, self)
 
     @property
@@ -74,7 +80,7 @@ class FakeUser:
         return self.channel.messages
 
     async def send(self, embed=None, view=None, **kw) -> FakeMessage:
-        return await self.channel.send(embed=embed, view=view)
+        return await self.channel.send(embed=embed, view=view, **kw)
 
 
 class FakeResponse:

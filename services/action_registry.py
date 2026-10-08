@@ -106,6 +106,10 @@ def get_all_actions() -> dict[str, ActionConfig]:
 def get_by_category(category: str) -> list[ActionConfig]:
     return [a for a in _registry.values() if a.category == category]
 
+# Action categories that only the adult commands (/intimate, /intimate_female) may run;
+# they are never offered by /roleplay, the legacy shortcuts or /help.
+ADULT_CATEGORIES = frozenset({"intimate", "intimate_female"})
+
 # Content lives in content/roleplay/*.md (see utils/content.py for the format).
 ACTION_FILES = (
     "roleplay/actions.md",
